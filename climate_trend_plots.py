@@ -31,24 +31,24 @@ cols = {
     4: [-1, 1, 2]
 }
 
-colors = ['red', 'blue']
+colors = ['lightcoral', 'slateblue']
 
 trend_colors = {
-    'red': 'maroon',
-    'blue': 'navy',
+    'lightcoral': 'red',
+    'slateblue': 'blue',
     'black': 'black'
 }
 
 locs = {
     'black':'upper center',
-    'red':'lower left',
-    'blue':'lower right'
+    'lightcoral':'lower left',
+    'slateblue':'lower right'
 }
 
 prefixes = {
     'black':'1&2: ',
-    'red':'1: ',
-    'blue':'2: '
+    'lightcoral':'1: ',
+    'slateblue':'2: '
 }
 
 def plot_trend(x:list, y:list,
@@ -75,10 +75,12 @@ def plot_trend(x:list, y:list,
         p_v_str = '>0.05'
     
     if plot:
-        ax.plot(x, p(x), "--", color=trend_colors[color])
+        ax.plot(x, p(x), color=trend_colors[color], linewidth=2, linestyle='--' if color == 'black' else '-')
     sign = '' if z[1]<0 else '+'
     text_eq = f"$y={z[0]:0.3f}\;x{sign}{z[1]:0.2f}$"
     text_r = f"$r={r_pearson:0.2f}, p{p_v_str}$"
+
+    print(f"y={z[0]:0.3f}x{sign}{z[1]:0.2f},{r_pearson:0.2f},{p_value:0.4f}")
     
     return p_value<0.05, text_eq, text_r
 
@@ -102,7 +104,8 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
     if with_plot:
         ax.plot(years, means, color=color, marker='o')
     
-    is_significant, text_eq, text_r = plot_trend(years, means, ax, color, with_trends)
+    is_significant, text_eq, text_r = plot_trend(years, means, ax, color, True)
+
     
     if is_significant:
         text = prefixes[color] + text_r
@@ -130,7 +133,7 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
 
 
 def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,
-                      start_year: int, end_year: int, with_trends:bool=True, colors:list=colors) -> None:
+                      start_year: int, end_year: int, with_trends:bool=False, colors:list=colors) -> None:
     """
     Строит пять графиков трендов (за весь год и для каждого из сезонов) 
     на одном изображении
@@ -150,11 +153,16 @@ def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,
         fig.add_subplot(gs[2, 0:2]),
         fig.add_subplot(gs[2, 2:4])
     ]
+    
     for i in range(5):
         if type(start_year)==list and type(end_year)==list:
             for color, s_y, e_y in zip(colors, start_year, end_year):
-                plot_measurement(data, axes[i], s_y, e_y, ylabel, i, color)
-            plot_measurement(data, axes[i], min(start_year), max(end_year), ylabel, i, 'black', True, False)
+                print(f'{station},{ylabel},{season_names[i]},', end='')
+                print(f'{s_y}-{e_y},', end='')
+                plot_measurement(data, axes[i], s_y, e_y, ylabel, i, color, with_trends)
+            print(f'{station},{ylabel},{season_names[i]},', end='')
+            print(f'{min(start_year)}-{max(end_year)},', end='')
+            plot_measurement(data, axes[i], min(start_year), max(end_year), ylabel, i, 'black', with_trends, False)
         else:
             plot_measurement(data, axes[i], start_year, end_year, ylabel, i, 'red', with_trends)
     label = ylabel.split()
