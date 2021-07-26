@@ -5,30 +5,22 @@ import pandas as pd
 # Топорные ибо требуют ручного ввода имён колонок
 # В будущем хорошо бы доработать, но они вроде как одноразовые поэтому пока сойдёт
 
-daily_columns_names = ["Индекс ВМО",
-                        "Год",
-                        "Месяц",
-                        "День",
-                        "Общий признак качества температур",
-                        "Минимальная температура воздуха",
-                        "Средняя температура воздуха",
-                        "Максимальная температура воздуха",
-                        "Количество осадков"]
+daily_columns_names = [
+    "Индекс ВМО", "Год", "Месяц", "День",
+    "Общий признак качества температур",
+    "Минимальная температура воздуха",
+    "Средняя температура воздуха",
+    "Максимальная температура воздуха",
+    "Количество осадков"
+    ]
 
-montly_columns_names = ["Индекс ВМО",
-                        "Год",
-                        "Январь",
-                        "Февраль",
-                        "Март",
-                        "Апрель",
-                        "Май",
-                        "Июнь",
-                        "Июль",
-                        "Август",
-                        "Сентябрь",
-                        "Октябрь",
-                        "Ноябрь",
-                        "Декабрь"]
+montly_columns_names = [
+    "Индекс ВМО", "Год",
+    "Январь", "Февраль", "Март",
+    "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь",
+    "Октябрь", "Ноябрь", "Декабрь"
+    ]
 
 def delete_all_spaces_from_txt(file_path: str) -> None:
     with open(file_path, 'r+') as f:
@@ -58,8 +50,8 @@ def txt_to_df(station: str, chars: str,
 # функция для преобразования .dat файлов с 
 # https://climexp.knmi.nl/selectfield_obs2.cgi?id=someone@somewhere
 # в DataFrame
-def dat_to_df(file_path: str, save_csv=True, save_ecel=False):
-    df = pd.DataFrame(columns=montly_columns_names[1:])
+def dat_to_df(file_path: str, monthly=True, save_csv=True, save_ecel=False):
+    df = pd.DataFrame(columns=montly_columns_names[1:] if monthly else ['Year', 'Month', 'Day', 'Measurement'])
     with open(file_path, 'r') as f:
         text = f.readlines()
         for line in text:

@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 
-def raw_to_df(file_path: str, tree_name_len=8) -> pd.DataFrame:
+def raw_to_df(file_path: str, tree_name_len=8, nan_placeholder=-9999) -> pd.DataFrame:
     tree = []
     year = []
     trw = []
@@ -22,7 +22,7 @@ def raw_to_df(file_path: str, tree_name_len=8) -> pd.DataFrame:
             tree += [line[0:tree_name_len].strip()]*len(trws)
             year += [start_year + i for i in range(len(trws))]
             trw += [int(i) for i in trws]
-    return pd.DataFrame({'Tree':tree, 'Year':year, 'TRW':trw}).replace(-9999, np.nan)
+    return pd.DataFrame({'Tree':tree, 'Year':year, 'TRW':trw}).replace(nan_placeholder, np.nan)
 
 def raw_to_excel(file_path: str, tree_name_len=8) -> None:
     df = raw_to_df(file_path, tree_name_len)
