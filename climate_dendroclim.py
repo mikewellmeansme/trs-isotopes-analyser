@@ -110,7 +110,7 @@ def plot_daily_dendroclim(t:list, p:list, title:str=''):
     t: список коэффицентов корреляции, полученный в get_crn_climate_correlation для температуры
     p: |------| для осадков
     """
-    template_df = pd.read_csv('input/template_df.csv')
+    template_df = pd.read_csv('utils/template_df.csv')
     template_df['Temp'] = [np.NaN for _ in range(730-len(t))] + t
     template_df['Prec'] = [np.NaN for _ in range(730-len(p))] + p
 
