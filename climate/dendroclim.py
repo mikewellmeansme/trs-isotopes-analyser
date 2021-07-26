@@ -65,11 +65,21 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
     return fig, ax
 
 
-def get_crn_climate_correlation(temperature, precipitation, chronology, start_year, end_year, window=21, grab=0):
+def get_crn_climate_correlation(temperature:pd.DataFrame, precipitation:pd.DataFrame,
+                                chronology:list, start_year, end_year, window=21, grab=0):
     """
+    temperature, precipitation: DataFrame, где по колонкам идут годы
+    chronology: список значений хронологии по которой идёт сравнение
+    window: окно скользящего среднего, сглаживающее температуры и осадки
+    grab: то, сколько дней захватываем с прошлого года
+
     Метод нахождения коррелции между заданной хронолгией и климатикой,
     сглаженной скользящим средним с окном равным window
+
+    !!!ПОКА ЧТО РАБОТАЕТ ТОЛЬКО С ЗАРАНЕЕ ОБРЕЗАННЫМИ ДАННЫМИ!!!
+    (в климатики и хронологии должно быть одинаковое число лет)
     """
+    # TODO: Нормальную обрезку по start_year, end_year
     # Вставляем данные window последних дней предыдущих лет в начала DataFrame'ов температуры и осадков
     # Для просчёта скользящего среднего сквозным через годы образом 
     _temp = temperature.iloc[-grab-window//2:]
