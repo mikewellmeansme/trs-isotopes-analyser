@@ -1,4 +1,1 @@
-import dendroclim
-import trend_plots
-import txt_to_tables
-import weather_gc_ca
+from . import dendroclim, trend_plots, txt_to_tables, weather_gc_ca

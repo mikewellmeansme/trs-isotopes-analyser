@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.dates as dates
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
-from utils import dropna_pearsonr
+from utils.functions import dropna_pearsonr
 
 
 m_names = ['S', 'O', 'N', 'D', 'J', 'F', 'M', 'A', 'M ', 'J', 'J', 'A']
@@ -105,18 +105,19 @@ def get_crn_climate_correlation(temperature, precipitation, chronology, start_ye
     return temp_corr, prec_corr
 
 
-def plot_daily_dendroclim(t:list, p:list, title:str=''):
+def plot_daily_dendroclim(t:list, p:list, title:str='', p_val=0.27, p_label='p<0.01'):
     """
     t: список коэффицентов корреляции, полученный в get_crn_climate_correlation для температуры
     p: |------| для осадков
     """
-    template_df = pd.read_csv('utils/template_df.csv')
-    template_df['Temp'] = [np.NaN for _ in range(730-len(t))] + t
-    template_df['Prec'] = [np.NaN for _ in range(730-len(p))] + p
+    template_df = pd.DataFrame()
+    template_df['Date'] = pd.date_range('1999-01-01', '2000-12-31')
+    template_df['Temp'] = [np.NaN for _ in range(731-len(t))] + t
+    template_df['Prec'] = [np.NaN for _ in range(731-len(p))] + p
 
     fig, ax = plt.subplots()
-    ax.plot(template_df['Date'], [0.27 for _ in template_df['Date']], color='gray', label='p<0.01', linestyle='--')
-    ax.plot(template_df['Date'], [-0.27 for _ in template_df['Date']], color='gray', linestyle='--')
+    ax.plot(template_df['Date'], [p_val for _ in template_df['Date']], color='gray', label=p_label, linestyle='--')
+    ax.plot(template_df['Date'], [-p_val for _ in template_df['Date']], color='gray', linestyle='--')
     ax.plot(template_df['Date'], template_df['Temp'], color='red', label='Temperature')
     ax.plot(template_df['Date'], template_df['Prec'], color='blue', label='Precipitation')
     ax.legend(frameon=False)
