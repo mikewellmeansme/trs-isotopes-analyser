@@ -66,10 +66,11 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
 
 
 def get_crn_climate_correlation(temperature:pd.DataFrame, precipitation:pd.DataFrame,
-                                chronology:list, start_year, end_year, window=21, grab=0):
+                                chronology:pd.DataFrame, crn_name='std', window=21, grab=150):
     """
     temperature, precipitation: DataFrame, где по колонкам идут годы
-    chronology: список значений хронологии по которой идёт сравнение
+    chronology: DataFrame с колонкой Year и колонками,
+    crn_name: Имя колонки требуемой хронологии 
     window: окно скользящего среднего, сглаживающее температуры и осадки
     grab: то, сколько дней захватываем с прошлого года
 
@@ -150,24 +151,3 @@ def plot_daily_dendroclim(t:list, p:list, title:str='', p_val=0.27, p_label='p<0
     plt.savefig(f'output/dendroclim_daily_{title}.png', dpi=200)
     plt.close(fig)
     return fig, ax
-
-
-def rotate_daily_climate(df):
-    """
-    Поворачивает климатические данные с meteo.ru так, чтобы годы шли по столбцам
-    (сделано, чтобы не переписывать get_crn_climate_correlation под новый стандарт)
-    """
-    temperature = dict()
-    precipitation = dict()
-
-    for year in list(set(df['Год'])):
-        temp = df[df['Год']==year].reset_index(drop=True)
-        if len(temp) < 366:
-            temp.loc[58.5] = year, 2, 29, np.NaN, np.NaN
-            temp = temp.sort_index().reset_index(drop=True)
-        temperature[year] = temp['Средняя температура воздуха']
-        precipitation[year] = temp['Количество осадков']
-
-    temperature = pd.DataFrame(temperature)
-    precipitation = pd.DataFrame(precipitation)
-    return temperature, precipitation
