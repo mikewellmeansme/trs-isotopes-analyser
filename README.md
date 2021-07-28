@@ -10,4 +10,6 @@ https://climate.weather.gc.ca/historical_data/search_historic_data_e.html
 
 https://climexp.knmi.nl/selectstation.cgi?id=5aabf3a35bc3bdf619673563eca82fa2
 
-Пока что это заготовка, не знаю, буду ли делать из этого нечто полноценное
+Пока что это заготовка, комментарии будут переписываться на английский, а код приводиться в порядок.
+
+Также планируется добавление нормальной документации.
