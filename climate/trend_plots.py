@@ -5,6 +5,8 @@ import matplotlib as mp
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+import os
 
 from scipy.stats import pearsonr
 from matplotlib.offsetbox import AnchoredText
@@ -153,7 +155,21 @@ def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,
         fig.add_subplot(gs[2, 0:2]),
         fig.add_subplot(gs[2, 2:4])
     ]
+
+    # redirecting stdout
+    orig_stdout = sys.stdout
+    file_name = f'output/{station}_trends.csv'
     
+    if os.path.isfile(file_name):
+        f = open(file_name, 'a')
+        sys.stdout = f
+    else:
+        f = open(file_name, 'w')
+        sys.stdout = f
+        print('station,mes,season,years,equation,correlation,p-vaule')
+    
+    
+
     for i in range(5):
         if type(start_year)==list and type(end_year)==list:
             for color, s_y, e_y in zip(colors, start_year, end_year):
@@ -165,6 +181,11 @@ def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,
             plot_measurement(data, axes[i], min(start_year), max(end_year), ylabel, i, 'black', with_trends, False)
         else:
             plot_measurement(data, axes[i], start_year, end_year, ylabel, i, 'red', with_trends)
+    
+    # returinig original stdout
+    sys.stdout = orig_stdout
+    f.close()
+
     label = ylabel.split()
     label = ' '.join(label[:len(label)-1])
     plt.savefig(f'output/{station}-{label}.png', dpi=200)
