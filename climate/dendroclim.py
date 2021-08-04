@@ -7,9 +7,10 @@ from utils.functions import dropna_pearsonr
 
 
 m_names = ['S', 'O', 'N', 'D', 'J', 'F', 'M', 'A', 'M ', 'J', 'J', 'A']
+default_ylim = [-0.6, 0.6]
 
 
-def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, colors:list, title:str=''):
+def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, colors:list, title:str='', ylim=default_ylim):
     """
     df_crn: DataFrame c хронологией - первая колонка (Year) годы, вторая - хронология (названа как угодно)
     dfs_char: список DataFrame'ов с характеристиками, с которыми требуется корреляция
@@ -54,7 +55,7 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
     ax.legend(frameon=False) 
     ax.set_xticks([i for i in range(0,12)])
     ax.set_xticklabels(m_names)
-    ax.set_ylim([-0.6, 0.6])
+    ax.set_ylim(ylim)
     ax.set_xlabel('Months')
     ax.set_ylabel('Pearson R')
     ax.set_title(title)
@@ -62,7 +63,7 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
     plt.savefig(f'output/dendroclim_monthly_{title}.png', dpi=200)
     plt.close(fig)
 
-    return fig, ax
+    return fig, ax, rs, ps
 
 
 def get_crn_climate_correlation(temperature:pd.DataFrame, precipitation:pd.DataFrame,
