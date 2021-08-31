@@ -5,6 +5,7 @@ import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 from utils.functions import dropna_pearsonr
 
+# Функции построения дендроклиматического отклика
 
 m_names = ['S', 'O', 'N', 'D', 'J', 'F', 'M', 'A', 'M ', 'J', 'J', 'A']
 default_ylim = [-0.6, 0.6]

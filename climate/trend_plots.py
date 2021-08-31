@@ -33,7 +33,7 @@ cols = {
     4: [-1, 1, 2]
 }
 
-colors = ['lightcoral', 'slateblue']
+colors = ['slateblue', 'lightcoral']
 
 trend_colors = {
     'lightcoral': 'red',
@@ -97,8 +97,8 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
     если with_trends, то строит линию тренда
     если with_plot, то строит сами данные
     """
-    data = data[(data['Год']>=start_year) & (data['Год']<=end_year)]
-    years = data['Год']
+    data = data[(data['Year']>=start_year) & (data['Year']<=end_year)]
+    years = data['Year']
     means = data.iloc[:,
                       cols[season_number] if type(season_number)==int else season_number
                      ].mean(axis=1, skipna=True)
