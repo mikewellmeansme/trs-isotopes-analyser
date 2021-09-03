@@ -1,0 +1,15 @@
+GRID:
+
+	https://climexp.knmi.nl/selectfield_obs2.cgi?id=someone@somewhere
+	1901-2019: CRU TS 4.04 (land) 
+
+	VP:  https://climexp.knmi.nl/select.cgi?id=someone@somewhere&field=cru4_vap
+
+	Temp: https://climexp.knmi.nl/select.cgi?id=someone@somewhere&field=cru4_tmp
+
+	Prec: https://climexp.knmi.nl/select.cgi?id=someone@somewhere&field=cru4_pre
+
+	Chokurdakh: 70-71 N  147-148 E
+	Inuvik:     71-72 N  102-103 E
+	Khatanga:   68-69 N -134--133 E
+

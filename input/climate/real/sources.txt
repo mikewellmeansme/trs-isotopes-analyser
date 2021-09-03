@@ -1,0 +1,12 @@
+REAL:
+
+	Inuvik Precipitation:
+	
+	https://climexp.knmi.nl/selectstation.cgi?id=someone@somewhere
+	INUVIK A,NW (CANADA)
+
+	Inuvik Temperature:
+	https://climate.weather.gc.ca/historical_data/search_historic_data_e.html
+	INUVIK A (both), Hourly to Monthly
+	
+	Chokurdakh, Khatanga: http://aisori-m.meteo.ru/waisori/
