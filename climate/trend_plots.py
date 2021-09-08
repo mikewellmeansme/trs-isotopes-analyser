@@ -131,7 +131,7 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
-    return text
+    return prefixes[color] + text_r
 
 
 def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,

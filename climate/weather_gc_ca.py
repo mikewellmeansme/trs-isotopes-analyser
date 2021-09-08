@@ -190,5 +190,4 @@ def montly_to_measurement(df:pd.DataFrame, mes:str):
     for month in range(2,13):
         temp_df = df[df['Month']==month][['Year', mes]].rename(columns={mes:months_names[month-1]})
         res_df = pd.merge(res_df, temp_df)
-    res_df = res_df.rename(columns={'Year':'Год'})
     return res_df
