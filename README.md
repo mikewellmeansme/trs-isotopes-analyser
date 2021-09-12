@@ -1,15 +1,7 @@
 # Climate master
 
-Тут хранятся функции для работы с климатическими данными, их скачиванием, трансформацией, сохранением и визуализацией
+Application for climate data processing and visualisation.
 
-Климатические данные берутся с:
+Climate data sources are listed [here](input/climate/real/sources.txt) for real data and [here](input/climate/grid/sources.txt) for grid data.
 
-http://meteo.ru/data
-
-https://climate.weather.gc.ca/historical_data/search_historic_data_e.html
-
-https://climexp.knmi.nl/selectstation.cgi?id=5aabf3a35bc3bdf619673563eca82fa2
-
-Пока что это заготовка, комментарии будут переписываться на английский, а код приводиться в порядок.
-
-Также планируется добавление нормальной документации.
+Current plots and tables obtained in `playground.ipynb` (refactoring and program splitting will be performed)
