@@ -44,3 +44,23 @@ def rotate_daily_climate(df: pd.DataFrame):
     temperature = pd.DataFrame(temperature)
     precipitation = pd.DataFrame(precipitation)
     return temperature, precipitation
+
+def monthly_climate_offset_and_clean(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Смещает осенние и декабрьские данные так, чтобы при обработки брались данные с прошлого года,
+    а также выбрасывает годы, в которые больше трёх пропусков
+    """
+    df['September'] = list(df['September'][1:]) + [np.NaN]
+    df['October'] = list(df['October'][1:]) + [np.NaN]
+    df['November'] = list(df['November'][1:]) + [np.NaN]
+    df['December'] = list(df['December'][1:]) + [np.NaN]
+
+    rows_to_drop = []
+    for i, row in df.iterrows():
+        if any(np.isnan(row[1:13])):
+            l = sum([1 for o in np.isnan(row[1:13]) if o])
+            if l > 3:
+                rows_to_drop += [i]
+    
+    df = df.drop(rows_to_drop)
+    return df

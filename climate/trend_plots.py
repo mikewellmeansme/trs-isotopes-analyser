@@ -10,7 +10,7 @@ import os
 
 from scipy.stats import pearsonr
 from matplotlib.offsetbox import AnchoredText
-
+from utils.df_preprocessing import monthly_climate_offset_and_clean
 
 months_names = ['January', 'February', 'March',
                 'April', 'May', 'June', 'July',
@@ -99,19 +99,7 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
     """
     data = data[(data['Year']>=start_year) & (data['Year']<=end_year)]
     
-    data['September'] = list(data['September'][1:]) + [np.NaN]
-    data['October'] = list(data['October'][1:]) + [np.NaN]
-    data['November'] = list(data['November'][1:]) + [np.NaN]
-    data['December'] = list(data['December'][1:]) + [np.NaN]
-
-    rows_to_drop = []
-    for i, row in data.iterrows():
-        if any(np.isnan(row)):
-            l = sum([1 for o in np.isnan(row) if o])
-            if l > 3:
-                rows_to_drop += [i]
-    
-    data = data.drop(rows_to_drop)
+    data = monthly_climate_offset_and_clean(data)
     
     years = data['Year']
 
