@@ -97,9 +97,10 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
     если with_trends, то строит линию тренда
     если with_plot, то строит сами данные
     """
-    data = data[(data['Year']>=start_year) & (data['Year']<=end_year)]
     
     data = monthly_climate_offset_and_clean(data)
+
+    data = data[(data['Year']>=start_year) & (data['Year']<=end_year)]
     
     years = data['Year']
 
