@@ -50,6 +50,7 @@ def monthly_climate_offset_and_clean(df: pd.DataFrame) -> pd.DataFrame:
     Смещает осенние и декабрьские данные так, чтобы при обработки брались данные с прошлого года,
     а также выбрасывает годы, в которые больше трёх пропусков
     """
+    df = df.copy()
     df['September'] = list(df['September'][1:]) + [np.NaN]
     df['October'] = list(df['October'][1:]) + [np.NaN]
     df['November'] = list(df['November'][1:]) + [np.NaN]
@@ -63,4 +64,4 @@ def monthly_climate_offset_and_clean(df: pd.DataFrame) -> pd.DataFrame:
                 rows_to_drop += [i]
     
     df = df.drop(rows_to_drop)
-    return df
+    return df.reset_index(drop=True)
