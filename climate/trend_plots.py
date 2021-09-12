@@ -18,11 +18,11 @@ months_names = ['January', 'February', 'March',
                 'November', 'December']
 
 season_names = {
-    0: '(a) annual',
-    1: '(b) spring',
-    2: '(c) summer',
-    3: '(d) autumn',
-    4: '(e) winter'
+    0: 'Annual',
+    1: 'Spring',
+    2: 'Summer',
+    3: 'Autumn',
+    4: 'Winter'
 }
 
 cols = {
@@ -30,7 +30,7 @@ cols = {
     1: [3, 4, 5],
     2: [6, 7, 8],
     3: [9, 10, 11],
-    4: [-1, 1, 2]
+    4: [1, 2, 12]
 }
 
 colors = ['slateblue', 'lightcoral']
@@ -90,7 +90,7 @@ def plot_trend(x:list, y:list,
 def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
                       start_year: int, end_year: int, ylabel: str,
                       season_number=0, color:str='red',
-                      with_trends:bool=True, with_plot:bool=True) -> str:
+                      with_trends:bool=True, with_plot:bool=True, with_title=True) -> str:
     """
     season_number: 0 - весь год, 1 - весна, 2 - лето, 3 - осень, 4 - зима
                    ИЛИ кастомный, список содержащий номера месяцев от 1 до 12
@@ -98,13 +98,29 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
     если with_plot, то строит сами данные
     """
     data = data[(data['Year']>=start_year) & (data['Year']<=end_year)]
+    
+    data['September'] = list(data['September'][1:]) + [np.NaN]
+    data['October'] = list(data['October'][1:]) + [np.NaN]
+    data['November'] = list(data['November'][1:]) + [np.NaN]
+    data['December'] = list(data['December'][1:]) + [np.NaN]
+
+    rows_to_drop = []
+    for i, row in data.iterrows():
+        if any(np.isnan(row)):
+            l = sum([1 for o in np.isnan(row) if o])
+            if l > 3:
+                rows_to_drop += [i]
+    
+    data = data.drop(rows_to_drop)
+    
     years = data['Year']
+
     means = data.iloc[:,
                       cols[season_number] if type(season_number)==int else season_number
                      ].mean(axis=1, skipna=True)
     
     if with_plot:
-        ax.plot(years, means, color=color, marker='o')
+        ax.scatter(years, means, color=color, marker='o')
     
     is_significant, text_eq, text_r = plot_trend(years, means, ax, color, True)
 
@@ -125,9 +141,10 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
     else:
         title = ' '.join([months_names[i-1] for i in season_number])
     
-    ax.set_title(title, loc='left')
-    ax.set_ylabel(ylabel)
-    ax.set_xlabel('Year')
+    if with_title:
+        ax.set_title(title, loc='left')
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel('Year')
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
@@ -190,3 +207,41 @@ def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,
     label = ' '.join(label[:len(label)-1])
     plt.savefig(f'output/{station}-{label}.png', dpi=200)
     plt.close(fig)
+
+
+def plot_measurements_separate(data: pd.DataFrame, station:str, ylabel:str, 
+    start_year: int, end_year: int, with_trends:bool=False, colors:list=colors, xlim: list = None) -> None:
+    for i in range(5):
+        fig, ax = plt.subplots(dpi=300)
+        for color, s_y, e_y in zip(colors, start_year, end_year):
+            #print(f'{station},{ylabel},{season_names[i]},', end='')
+            #print(f'{s_y}-{e_y},', end='')
+            plot_measurement(data, ax, s_y, e_y, ylabel, i, color, with_trends)
+        plot_measurement(data, ax, min(start_year), max(end_year), ylabel, i, 'black', with_trends, False, with_title=False)
+        if xlim:
+            ax.set_xlim(xlim)
+        plt.savefig(f'output/{station}-{ylabel}-{season_names[i]}.png', dpi=300)
+        plt.close(fig)
+
+
+def plot_measurements_by_measure(datas: list, stations: list, ylabel:str, units: str,
+    start_year: int, end_year: int, with_trends:bool=False, colors:list=colors, xticks=False) -> None:
+    fig, axes = plt.subplots(nrows=len(datas), ncols=5, sharex=True, sharey='col', dpi=300, figsize=(18, 8))
+    plt.subplots_adjust(hspace=0.04)
+    for j, data in enumerate(datas):
+        axes[j, 0].set_ylabel(stations[j]+'\n'+units)
+        for i in range(5):
+            
+            if j == 0:
+                axes[0, i].set_title(season_names[i])
+            if j == len(datas)-1:
+                axes[j, i].set_xlabel('Year')
+                if xticks:
+                    axes[j, i].set_xticks(xticks)
+            for color, s_y, e_y in zip(colors, start_year, end_year):
+                plot_measurement(data, axes[j, i], s_y, e_y, ylabel, i, color, with_trends, with_title=False)
+            plot_measurement(data, axes[j, i], min(start_year), max(end_year), ylabel, i, 'black', with_trends, False, with_title=False)
+
+    plt.savefig(f'output/{ylabel}.png', dpi=300)
+    plt.close(fig)
+
