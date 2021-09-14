@@ -5,8 +5,13 @@ REAL:
 	https://climexp.knmi.nl/selectstation.cgi?id=someone@somewhere
 	INUVIK A,NW (CANADA)
 
-	Inuvik Temperature:
+	Inuvik Temperature, Dew Point Temperature:
 	https://climate.weather.gc.ca/historical_data/search_historic_data_e.html
 	INUVIK A (both), Hourly to Monthly
+
+	Inuvik VPD:
+	Calculated from Temperature and Dew Point Temperature
+	by formula VPD = e(Temp)-e(Dew Point Temp)
+	where e(x) = 6,1086 * EXP((17,269*x)/(273,3+x))
 	
 	Chokurdakh, Khatanga: http://aisori-m.meteo.ru/waisori/
