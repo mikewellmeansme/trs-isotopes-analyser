@@ -12,6 +12,8 @@ from scipy.stats import pearsonr
 from matplotlib.offsetbox import AnchoredText
 from utils.df_preprocessing import monthly_climate_offset_and_clean
 
+SAVE = True
+
 months_names = ['January', 'February', 'March',
                 'April', 'May', 'June', 'July',
                 'August', 'September', 'October',
@@ -82,7 +84,9 @@ def plot_trend(x:list, y:list,
     text_eq = f"$y={z[0]:0.3f}\;x{sign}{z[1]:0.2f}$"
     text_r = f"$r={r_pearson:0.2f}, p{p_v_str}$"
 
-    print(f"y={z[0]:0.3f}x{sign}{z[1]:0.2f},{r_pearson:0.2f},{p_value:0.4f}")
+    global SAVE
+    if SAVE:
+        print(f"y={z[0]:0.3f}x{sign}{z[1]:0.2f},{r_pearson:0.2f},{p_value:0.4f}")
     
     return p_value<0.05, text_eq, text_r
 
@@ -214,7 +218,9 @@ def plot_measurements_separate(data: pd.DataFrame, station:str, ylabel:str,
 
 
 def plot_measurements_by_measure(datas: list, stations: list, ylabel:str, units: str,
-    start_year: int, end_year: int, with_trends:bool=False, colors:list=colors, xticks=False) -> None:
+    start_year: int, end_year: int, with_trends:bool=False, colors:list=colors, xticks=False, save=True) -> None:
+    global SAVE
+    SAVE = save
     fig, axes = plt.subplots(nrows=len(datas), ncols=5, sharex=True, sharey='col', dpi=300, figsize=(18, 8))
     plt.subplots_adjust(hspace=0.04)
     for j, data in enumerate(datas):
@@ -230,7 +236,9 @@ def plot_measurements_by_measure(datas: list, stations: list, ylabel:str, units:
             for color, s_y, e_y in zip(colors, start_year, end_year):
                 plot_measurement(data, axes[j, i], s_y, e_y, ylabel, i, color, with_trends, with_title=False)
             plot_measurement(data, axes[j, i], min(start_year), max(end_year), ylabel, i, 'black', with_trends, False, with_title=False)
-
-    plt.savefig(f'output/{ylabel}.png', dpi=300)
+    if save:
+        plt.savefig(f'output/{ylabel}.png', dpi=300)
+    else:
+        plt.show()
     plt.close(fig)
 
