@@ -40,3 +40,5 @@ climate_I = pd.read_csv('../input/climate/real/daily/Daily_Inuvik.csv')
 grid_temp_I = pd.read_csv('../input/climate/grid/temperature/Grid_Temp_Inuvik.csv')
 grid_prec_I = pd.read_csv('../input/climate/grid/precipitation/Grid_Prec_Inuvik.csv')
 grid_vp_I = pd.read_csv('../input/climate/grid/vpd/Grid_VP_Inuvik.csv')
+
+d18O_yearly = pd.read_excel('../input/d18O.xlsx')
