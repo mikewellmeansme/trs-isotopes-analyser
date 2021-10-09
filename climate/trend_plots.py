@@ -40,7 +40,12 @@ colors = ['slateblue', 'lightcoral']
 trend_colors = {
     'lightcoral': 'red',
     'slateblue': 'blue',
-    'black': 'black'
+    'black': 'black',
+    'C0' : 'darkorange',
+    'C1' : 'royalblue',
+    'brown': 'darkred',
+    'mediumpurple': 'blueviolet'
+
 }
 
 locs = {
@@ -52,7 +57,11 @@ locs = {
 prefixes = {
     'black':'1&2: ',
     'lightcoral':'1: ',
-    'slateblue':'2: '
+    'slateblue':'2: ',
+    'C0' : '',
+    'C1' : '',
+    'brown': '',
+    'mediumpurple': ''
 }
 
 def plot_trend(x:list, y:list,
@@ -93,7 +102,7 @@ def plot_trend(x:list, y:list,
 
 def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
                       start_year: int, end_year: int, ylabel: str,
-                      season_number=0, color:str='red',
+                      season_number=0, color:str='red', marker='o',
                       with_trends:bool=True, with_plot:bool=True, with_title=True) -> str:
     """
     season_number: 0 - весь год, 1 - весна, 2 - лето, 3 - осень, 4 - зима
@@ -113,7 +122,7 @@ def plot_measurement(data: pd.DataFrame, ax:'mp.axes._subplots.AxesSubplot',
                      ].mean(axis=1, skipna=True)
     
     if with_plot:
-        ax.scatter(years, means, color=color, marker='o')
+        ax.scatter(years, means, color=color, marker=marker)
     
     is_significant, text_eq, text_r = plot_trend(years, means, ax, color, True)
 
@@ -185,12 +194,12 @@ def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,
             for color, s_y, e_y in zip(colors, start_year, end_year):
                 print(f'{station},{ylabel},{season_names[i]},', end='')
                 print(f'{s_y}-{e_y},', end='')
-                plot_measurement(data, axes[i], s_y, e_y, ylabel, i, color, with_trends)
+                plot_measurement(data, axes[i], s_y, e_y, ylabel, i, color, with_trends=with_trends)
             print(f'{station},{ylabel},{season_names[i]},', end='')
             print(f'{min(start_year)}-{max(end_year)},', end='')
-            plot_measurement(data, axes[i], min(start_year), max(end_year), ylabel, i, 'black', with_trends, False)
+            plot_measurement(data, axes[i], min(start_year), max(end_year), ylabel, i, 'black', with_trends=with_trends, with_plot=False)
         else:
-            plot_measurement(data, axes[i], start_year, end_year, ylabel, i, 'red', with_trends)
+            plot_measurement(data, axes[i], start_year, end_year, ylabel, i, 'red', with_trends=with_trends)
     
     # returinig original stdout
     sys.stdout = orig_stdout
@@ -209,8 +218,8 @@ def plot_measurements_separate(data: pd.DataFrame, station:str, ylabel:str,
         for color, s_y, e_y in zip(colors, start_year, end_year):
             #print(f'{station},{ylabel},{season_names[i]},', end='')
             #print(f'{s_y}-{e_y},', end='')
-            plot_measurement(data, ax, s_y, e_y, ylabel, i, color, with_trends)
-        plot_measurement(data, ax, min(start_year), max(end_year), ylabel, i, 'black', with_trends, False, with_title=False)
+            plot_measurement(data, ax, s_y, e_y, ylabel, i, color, with_trends=with_trends)
+        plot_measurement(data, ax, min(start_year), max(end_year), ylabel, i, 'black', with_trends=with_trends, with_plot=False, with_title=False)
         if xlim:
             ax.set_xlim(xlim)
         plt.savefig(f'output/{station}-{ylabel}-{season_names[i]}.png', dpi=300)
@@ -234,11 +243,36 @@ def plot_measurements_by_measure(datas: list, stations: list, ylabel:str, units:
                 if xticks:
                     axes[j, i].set_xticks(xticks)
             for color, s_y, e_y in zip(colors, start_year, end_year):
-                plot_measurement(data, axes[j, i], s_y, e_y, ylabel, i, color, with_trends, with_title=False)
-            plot_measurement(data, axes[j, i], min(start_year), max(end_year), ylabel, i, 'black', with_trends, False, with_title=False)
+                plot_measurement(data, axes[j, i], s_y, e_y, ylabel, i, color, with_trends=with_trends, with_title=False)
+            plot_measurement(data, axes[j, i], min(start_year), max(end_year), ylabel, i, 'black', with_trends=with_trends, with_plot=False, with_title=False)
     if save:
         plt.savefig(f'output/{ylabel}.png', dpi=300)
     else:
         plt.show()
     plt.close(fig)
 
+
+def plot_measurements_by_measure_squashed(datas: list, stations: list, ylabel:str, units: str,
+        start_year: int, end_year: int, with_trends:bool=False, colors:list=colors, xticks=False, save=True) -> None:
+    global SAVE
+    SAVE = save
+    fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True, sharey=True, dpi=300, figsize=(5, 15))
+    plt.subplots_adjust(hspace=0.04)
+    markers = ['o', 'v', 's', 'D', 'x']
+    
+    axes[0].set_title(ylabel)
+    axes[-1].set_xlabel('Year')
+    for j, data in enumerate(datas):
+        axes[j].set_ylabel(stations[j]+'\n'+units)
+        for i in range(5):
+            if xticks:
+                axes[j].set_xticks(xticks)
+            
+            for color, s_y, e_y in zip(colors, start_year, end_year):
+                plot_measurement(data, axes[j], s_y, e_y, ylabel, i, color, marker=markers[i], with_trends=with_trends, with_title=False)
+            plot_measurement(data, axes[j], min(start_year), max(end_year), ylabel, i, 'black', with_trends=with_trends, with_plot=False, with_title=False)
+    if save:
+        plt.savefig(f'output/{ylabel}.png', dpi=300)
+    else:
+        plt.show()
+    plt.close(fig)
