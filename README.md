@@ -8,4 +8,4 @@ Climate data sources are listed [here](input/climate/real/sources.txt) for the r
 
 Final images and tables available in folder `final output`.
 
-Current plots and tables obtained in `playground.ipynb` (refactoring and program splitting will be performed)
+Current plots and tables obtained in .ipynb files from `notebooks` folder.
