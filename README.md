@@ -10,6 +10,6 @@ Final images and tables available in folder `final output`.
 
 Current plots and tables obtained in .ipynb files from `notebooks` folder.
 
-`climate` directory contains scripts for climate data processing.
+`climate` package contains modules for climate data processing.
 
-`utils` directory contains scripts with utility functions.
+`utils` package contains modules with utility functions.
