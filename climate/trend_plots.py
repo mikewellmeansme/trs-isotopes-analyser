@@ -174,6 +174,8 @@ def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,
         fig.add_subplot(gs[2, 0:2]),
         fig.add_subplot(gs[2, 2:4])
     ]
+    global SAVE
+    SAVE = True
 
     # redirecting stdout
     orig_stdout = sys.stdout
@@ -204,6 +206,7 @@ def plot_measurements(data: pd.DataFrame, station:str, ylabel:str,
     # returinig original stdout
     sys.stdout = orig_stdout
     f.close()
+    SAVE = False
 
     label = ylabel.split()
     label = ' '.join(label[:len(label)-1])
