@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.dates as dates
@@ -5,6 +6,7 @@ import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 from utils.functions import dropna_pearsonr
 
+sys.path.append('..')
 # Функции построения дендроклиматического отклика
 
 m_names = ['S', 'O', 'N', 'D', 'J', 'F', 'M', 'A', 'M ', 'J', 'J', 'A']
@@ -61,7 +63,7 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
     ax.set_ylabel('Pearson R')
     ax.set_title(title)
 
-    plt.savefig(f'output/dendroclim_monthly_{title}.png', dpi=200)
+    plt.savefig(f'../output/dendroclim_monthly_{title}.png', dpi=200)
     plt.close(fig)
 
     return fig, ax, rs, ps
@@ -150,6 +152,6 @@ def plot_daily_dendroclim(t:list, p:list, title:str='', p_val=0.27, p_label='p<0
     ax.set_ylabel('Pearson R')
     ax.set_xlabel('Month')
     ax.set_xlim(pd.Timestamp('1999-09-01'), pd.Timestamp('2000-08-31'))
-    plt.savefig(f'output/dendroclim_daily_{title}.png', dpi=200)
+    plt.savefig(f'../output/dendroclim_daily_{title}.png', dpi=200)
     plt.close(fig)
     return fig, ax
