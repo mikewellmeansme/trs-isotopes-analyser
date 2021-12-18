@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 mean_rh_C = pd.read_csv('../input/climate/real/relative humidity/RH_Chokurdakh.csv').drop(['Индекс ВМО'], axis=1)
-mean_sol_C = pd.read_csv('../input/climate/real/sunshine duration/SD_Chokurdakh.csv').drop(['Индекс ВМО'], axis=1).replace(9999, np.nan)
+mean_sol_C = pd.read_csv('../input/climate/real/sunshine duration/SD_Chokurdakh.csv')
 
 mean_temp_C = pd.read_csv('../input/climate/real/temperature/Temp_Chokurdakh.csv').drop(['Индекс ВМО'], axis=1)
 mean_prec_C = pd.read_csv('../input/climate/real/precipitation/Prec_Chokurdakh.csv').drop(['Индекс ВМО'], axis=1)
@@ -16,7 +16,7 @@ grid_prec_C = pd.read_csv('../input/climate/grid/precipitation/Grid_Prec_Chokurd
 grid_vp_C = pd.read_csv('../input/climate/grid/vpd/Grid_VP_Chokurdakh.csv')
 
 mean_rh_H = pd.read_csv('../input/climate/real/relative humidity/RH_Khatanga.csv').drop(['Индекс ВМО'], axis=1)
-mean_sol_H = pd.read_csv('../input/climate/real/sunshine duration/SD_Khatanga.csv').drop(['Индекс ВМО'], axis=1).replace(9999, np.nan)
+mean_sol_H = pd.read_csv('../input/climate/real/sunshine duration/SD_Khatanga.csv')
 
 mean_temp_H = pd.read_csv('../input/climate/real/temperature/Temp_Khatanga.csv').drop(['Индекс ВМО'], axis=1)
 mean_prec_H = pd.read_csv('../input/climate/real/precipitation/Prec_Khatanga.csv').drop(['Индекс ВМО'], axis=1)

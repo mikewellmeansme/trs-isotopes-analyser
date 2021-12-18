@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.dates as dates
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
+import traceback
 from utils.functions import dropna_pearsonr
 
 sys.path.append('..')
@@ -38,7 +39,11 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
             if 9 <= i <= 12:
                 y = np.insert(y, 0, np.nan)
                 y = np.delete(y, -1)
-            r, p = dropna_pearsonr(x, y)
+            try:
+                r, p = dropna_pearsonr(x, y)
+            except:
+                print(traceback.format_exc())
+                r, p = np.nan, np.nan
             rs[key] += [r]
             ps[key] += [p]
     
