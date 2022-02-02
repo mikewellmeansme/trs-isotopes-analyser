@@ -14,4 +14,4 @@ REAL:
 	by formula VPD = e(Temp)-e(Dew Point Temp)
 	where e(x) = 6,1086 * EXP((17,269*x)/(273,3+x))
 	
-	Chokurdakh, Khatanga: http://aisori-m.meteo.ru/waisori/
+	Chokurdakh, Khatanga, Deputatsky: http://aisori-m.meteo.ru/waisori/
