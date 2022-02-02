@@ -9,7 +9,8 @@ GRID:
 
 	Prec: https://climexp.knmi.nl/select.cgi?id=someone@somewhere&field=cru4_pre
 
-	Chokurdakh: 70-71 N  147-148 E
-	Inuvik:     71-72 N  102-103 E
-	Khatanga:   68-69 N -134--133 E
+	Chokurdakh:   70-71 N  147-148  E
+	Khatanga:     71-72 N  102-103  E
+	Inuvik:       68-69 N -134--133 E
+	Deputatsky:   69-70 N  139-140  E
 
