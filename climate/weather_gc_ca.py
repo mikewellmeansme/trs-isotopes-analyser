@@ -139,7 +139,7 @@ def hourly_to_daily(df, need_cols=need_cols_2, file_name=''):
     return daily_df
 
 
-def daily_to_monthly(df, need_cols=need_cols_2, file_name=''):
+def daily_to_monthly(df, need_cols=need_cols_2, file_name='', sum_or_mean='mean'):
     """
     Преобразовывает ежедневные данные, полученные в hourly_to_daily в ежемесячные,
     путём усреднения показателей на протяжении месяца.
@@ -151,14 +151,14 @@ def daily_to_monthly(df, need_cols=need_cols_2, file_name=''):
     monthly_df = pd.DataFrame(columns=need_cols)
     for year in years:
         months = list(set(df[(df['Year']==year)]['Month']))
-        print(f'Year {year}: ', end='')
         for month in months:
-            print('-', end='')
             mon_df = df[(df['Year']==year) & (df['Month']==month)]
-            monthly_df = monthly_df.append(mon_df[need_cols].mean(skipna=True), ignore_index=True)
+            if sum_or_mean == 'mean':
+                monthly_df = monthly_df.append(mon_df[need_cols].mean(skipna=True), ignore_index=True)
+            else:
+                monthly_df = monthly_df.append(mon_df[need_cols].sum(skipna=True), ignore_index=True)
             y += [year]
             m += [month]
-        print()
     monthly_df['Year'] = y
     monthly_df['Month'] = m
     monthly_df = monthly_df[['Year', 'Month'] + need_cols]
