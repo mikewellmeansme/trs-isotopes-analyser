@@ -14,13 +14,16 @@ m_names = ['S', 'O', 'N', 'D', 'J', 'F', 'M', 'A', 'M ', 'J', 'J', 'A']
 default_ylim = [-0.6, 0.6]
 
 
-def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, colors:list, title:str='', ylim=default_ylim):
+def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, colors:list, title:str='',
+                           ylim=default_ylim, savepath='', print_traceback=False):
     """
     df_crn: DataFrame c хронологией - первая колонка (Year) годы, вторая - хронология (названа как угодно)
     dfs_char: список DataFrame'ов с характеристиками, с которыми требуется корреляция
               первая колонка -- годы (Year), все остальные -- месяцы (названы как угодно)
     ylabels: список названий характеристик
     clors: цвета, которыми нужно рисовать линии для измерения
+    savepath: Путь, по которому будет сохранён график
+    print_traceback: Если True, то вывыодит текст ошибок
     """
     if len(dfs_char)!=len(ylabels) or len(dfs_char)!=len(colors):
         raise Exception('Not every DataFrame have its own label!')
@@ -42,7 +45,9 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
             try:
                 r, p = dropna_pearsonr(x, y)
             except:
-                print(traceback.format_exc())
+                if print_traceback:
+                    print(f'{x = }, {y = }')
+                    print(traceback.format_exc())
                 r, p = np.nan, np.nan
             rs[key] += [r]
             ps[key] += [p]
@@ -68,7 +73,8 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
     ax.set_ylabel('Pearson R')
     ax.set_title(title)
 
-    plt.savefig(f'../output/dendroclim_monthly_{title}.png', dpi=200)
+    if savepath:
+        plt.savefig(f'{savepath}/dendroclim_monthly_{title}.png', dpi=200)
     plt.close(fig)
 
     return fig, ax, rs, ps
