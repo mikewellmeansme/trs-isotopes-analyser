@@ -1,0 +1,25 @@
+Region;Site #;Site name;Site code;Latitude (°N);Longitude (°E);Elevation;"Site type (1=d13C; 2=d18O; 3=d13C&d18O; 4=triple)"
+Russian Federation;1;Indigirka;IND;69;148;350;3
+Russian Federation;2;Moreju;MOR;68;60;40;3
+Russian Federation;3;Suntar Khayata, Yakutia;YAK;63;139;900;1
+Russian Federation;4;Spasskaya Pad;PYAD;62.23333333;129.6166667;220;2
+Russian Federation;5;Taimyr Peninsula;TAY;68;103;300;4
+Russian Federation;6;Eniseysk;ENE;58;92;150;3
+Russian Federation;7;Khibini, Kola Peninsula;KOL;67;33;761;3
+Russian Federation;8;Tura;TUR;64.53333333;100.2333333;168;3
+Russian Federation;9;Khakasia;KHAK;54.4;89.95;477;3
+Russian Federation;10;Davan Pass;DAV;55.85;108.9166667;1400;1
+Russian Federation;11;Olkhon Island;OLH;53.28333333;107.6333333;530;2
+Russian Federation;12;Irkutsk;IRK;52;104;530;1
+Russian Federation;13;Altai;ALT;50.63333333;89.1;2280;3
+Russian Federation;14;Altai;AL;50.4;87.55;2300;3
+Russian Federation;15;Ersin;HO;50.83333333;93.01666667;1502;3
+Russian Federation;16;Chadan;CH;51.46666667;91.96666667;832;3
+Finland;17;Laanila;LAN;68;27;220;2
+Finland;18;Kessi Inari;INA;68.15;28.06666667;150;4
+Finland;19;Ilomantsi;ILO;62.15;30.15;200;4
+Norway;20;Forfjorddalen, Forfjord, Vester?len;FOR;68.8;15.73333333;10;1
+Norway;21;Gutulia;GUT;62;12;800;4
+Canada;22;Quebec taiga;QU;54;-71;400;3
+Canada;23;Mackenzie Delta;CAN;68.4;-133.8166667;3;4
+USA;24;Reserve West - Bonanza Creek LTER site, central Alaska;ALA;64.7;-148.3;290;1
