@@ -1,4 +1,4 @@
-,Region,Site #,Site name,Site code,Latitude (N degree),Longitude (E degree),Elevation,Site type (1=d13C; 2=d18O; 3=d13C&d18O; 4=triple)
+,Region,Site #,Site name,Site code,Latitude (degrees N),Longitude (degrees E),Elevation,Site type (1=d13C; 2=d18O; 3=d13C&d18O; 4=triple)
 0,Russian Federation,1,Indigirka,IND,69.0,148.0,350,3
 1,Russian Federation,2,Moreju,MOR,68.0,60.0,40,3
 2,Russian Federation,3,"Suntar Khayata, Yakutia",YAK,63.0,139.0,900,1
