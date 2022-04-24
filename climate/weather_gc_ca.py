@@ -7,27 +7,21 @@ import requests as rec
 import re
 import json
 
-header_1 = """Longitude (x),Latitude (y),Station Name,Climate ID,
-Date/Time (LST),Year,Month,Day,Time (LST),Temp (°C),Temp Flag,
-Dew Point Temp (°C),Dew Point Temp Flag,Rel Hum (%),Rel Hum Flag,
-Wind Dir (10s deg),Wind Dir Flag,Wind Spd (km/h),Wind Spd Flag,
-Visibility (km),Visibility Flag,Stn Press (kPa),Stn Press Flag,Hmdx,
-Hmdx Flag,Wind Chill,Wind Chill Flag,Weather\n"""
+# All temperature here in  °C
 
-header_2 = """Longitude (x),Latitude (y),Station Name,Climate ID,
-Date/Time (LST),Year,Month,Day,Time (LST),Temp (°C),Temp Flag,
-Dew Point Temp (°C),Dew Point Temp Flag,Rel Hum (%),Rel Hum Flag,
-Precip. Amount (mm),Precip. Amount Flag,Wind Dir (10s deg),Wind Dir Flag,
-Wind Spd (km/h),Wind Spd Flag,Visibility (km),Visibility Flag,Stn Press (kPa),
-Stn Press Flag,Hmdx,Hmdx Flag,Wind Chill,Wind Chill Flag,Weather\n"""
+header_1 = """Longitude (x),Latitude (y),Station Name,Climate ID,Date/Time (LST),Year,Month,Day,Time (LST),Temp,Temp Flag,Dew Point Temp,Dew Point Temp Flag,Rel Hum (%),Rel Hum Flag,Wind Dir (10s deg),Wind Dir Flag,Wind Spd (km/h),Wind Spd Flag,Visibility (km),Visibility Flag,Stn Press (kPa),Stn Press Flag,Hmdx,Hmdx Flag,Wind Chill,Wind Chill Flag,Weather\n"""
 
-need_cols_1 = ['Temp (°C)', 'Dew Point Temp (°C)',
+header_2 = """Longitude (x),Latitude (y),Station Name,Climate ID,Date/Time (LST),Year,Month,Day,Time (LST),Temp,Temp Flag,Dew Point Temp,Dew Point Temp Flag,Rel Hum (%),Rel Hum Flag,Precip. Amount (mm),Precip. Amount Flag,Wind Dir (10s deg),Wind Dir Flag,Wind Spd (km/h),Wind Spd Flag,Visibility (km),Visibility Flag,Stn Press (kPa),Stn Press Flag,Hmdx,Hmdx Flag,Wind Chill,Wind Chill Flag,Weather\n"""
+
+need_cols_0 = ['Temp', 'Dew Point Temp', 'Rel Hum (%)', 'Precip. Amount (mm)', 'Stn Press (kPa)']
+
+need_cols_1 = ['Temp', 'Dew Point Temp',
  'Rel Hum (%)', 'Wind Dir (10s deg)', 
  'Wind Spd (km/h)', 'Visibility (km)',
  'Stn Press (kPa)', 'Hmdx',
  'Wind Chill']
 
-need_cols_2 = ['Temp (°C)', 'Dew Point Temp (°C)',
+need_cols_2 = ['Temp', 'Dew Point Temp',
  'Rel Hum (%)', 'Precip. Amount (mm)', 'Wind Dir (10s deg)', 
  'Wind Spd (km/h)', 'Visibility (km)',
  'Stn Press (kPa)', 'Hmdx',
@@ -37,6 +31,8 @@ months_names = ['January', 'February', 'March',
                 'April', 'May', 'June', 'July',
                 'August', 'September', 'October',
                 'November', 'December']
+
+agg_params_1 = {'Temp':'mean', 'Dew Point Temp':'mean',  'Rel Hum (%)':'mean', 'Precip. Amount (mm)':'sum', 'Stn Press (kPa)':'mean'}
 
 
 def download_climate(station_id, start_year, end_year):
@@ -60,8 +56,10 @@ def download_climate(station_id, start_year, end_year):
     Функции нужно скормить station_id.
     station_id я не дам.
     """
-    #station_id=1669 -- для INUVIK A 1959-2013 года
-    #station_id=51477 -- для INUVIK A 2013-2020 года
+    #station_id=1669 -- для INUVIK A 1959-2013
+    #station_id=51477 -- для INUVIK A 2013-2020
+    #station_id=6098 -- для SCHEFFERVILLE A 1953-2010
+    #station_id=49649 -- для SCHEFFERVILLE A 2012-2022
     all_texts = dict()
     for year in range(start_year, end_year):
         texts = []
@@ -83,7 +81,7 @@ def dict_to_json(all_texts, file_name):
         json.dump(all_texts, outfile)
 
 
-def dict_to_csv(all_texts, file_name, header=header_2):
+def dict_to_csv(all_texts, file_name, start_year, end_year, header=header_2):
     """
     Объединяет csv ответы из download_climate в единый csv файл
     ОСТОРОЖНО! Ответы могут иметь разное число колонок, поэтому их лучше проверить
@@ -91,7 +89,7 @@ def dict_to_csv(all_texts, file_name, header=header_2):
     """
     with open(f"{file_name}_HOURLY.csv", "w") as ouf:
         ouf.write(header)
-        for year in range(2013, 2021):
+        for year in range(start_year, end_year):
             for month in range(12):
                 is_header = True
                 for line in all_texts[year][month].replace('"', '').replace('\r', '').split('\n'):
@@ -107,11 +105,12 @@ def dict_to_csv(all_texts, file_name, header=header_2):
                         ouf.write(line + '\n')
 
 
-def hourly_to_daily(df, need_cols=need_cols_2, file_name=''):
+def hourly_to_daily(df, need_cols=need_cols_0, agg_params=agg_params_1, file_name=''):
     """
     Преобразовывает почасовые данные, полученные в dict_to_csv в ежедневные,
     путём усреднения показателей на протяжении дня.
     В need_cols указываем те показатели, что нам нужны.
+    agg_params -- словарь, где ключи из need_cols, а значения либо 'mean' либо 'sum'
     Если file_name не пустой, то сохраняет данные в .csv файл.
     """
     years = sorted(list(set(df['Year'])))
@@ -125,7 +124,7 @@ def hourly_to_daily(df, need_cols=need_cols_2, file_name=''):
             days = list(set(df[(df['Year']==year) & (df['Month']==month)]['Day']))
             for day in days:
                 day_df = df[(df['Year']==year) & (df['Month']==month) &(df['Day']==day)]
-                daily_df = daily_df.append(day_df[need_cols].mean(skipna=True), ignore_index=True)
+                daily_df = daily_df.append(day_df.agg(agg_params), ignore_index=True)
                 y += [year]
                 m += [month]
                 d += [day]
@@ -139,11 +138,12 @@ def hourly_to_daily(df, need_cols=need_cols_2, file_name=''):
     return daily_df
 
 
-def daily_to_monthly(df, need_cols=need_cols_2, file_name='', sum_or_mean='mean'):
+def daily_to_monthly(df, need_cols=need_cols_0, agg_params=agg_params_1, file_name=''):
     """
     Преобразовывает ежедневные данные, полученные в hourly_to_daily в ежемесячные,
     путём усреднения показателей на протяжении месяца.
     В need_cols указываем те показатели, что нам нужны.
+    agg_params -- словарь, где ключи из need_cols, а значения либо 'mean' либо 'sum'
     Если file_name не пустой, то сохраняет данные в .csv файл.
     """
     years = sorted(list(set(df['Year'])))
@@ -153,10 +153,7 @@ def daily_to_monthly(df, need_cols=need_cols_2, file_name='', sum_or_mean='mean'
         months = list(set(df[(df['Year']==year)]['Month']))
         for month in months:
             mon_df = df[(df['Year']==year) & (df['Month']==month)]
-            if sum_or_mean == 'mean':
-                monthly_df = monthly_df.append(mon_df[need_cols].mean(skipna=True), ignore_index=True)
-            else:
-                monthly_df = monthly_df.append(mon_df[need_cols].sum(skipna=True), ignore_index=True)
+            monthly_df = monthly_df.append(mon_df.agg(agg_params), ignore_index=True)
             y += [year]
             m += [month]
     monthly_df['Year'] = y
