@@ -38,19 +38,23 @@ def delete_all_spaces_from_txt(file_path: str) -> None:
         f.truncate()
 
 
-def txt_to_df(station: str, chars: str,
-                  colums_names: list,
-                  input_path='input', output_path='output',
-                  save_csv=True, save_ecel=False) -> None:
-    delete_all_spaces_from_txt(f'{input_path}/{station}.txt')
-    df = pd.read_csv(f'{input_path}/{station}.txt', sep=';', header=None)
+def txt_to_df(station: str, char: str,
+              colums_names: list,
+              input_path='input', output_path='output',
+              save_csv=True, save_ecel=False) -> pd.DataFrame:
+    """
+    input_path: Relative path to txt station file INCLUDING name of a file
+    output_path: Relative path to folder to save resulst EXCLUDING name of a file
+    """
+    delete_all_spaces_from_txt(input_path)
+    df = pd.read_csv(input_path, sep=';', header=None)
 
     df = df.rename(columns={i:colums_names[i] for i in range(len(colums_names))})
 
     if save_csv:
-        df.to_csv(f'{output_path}/{station}_{chars}.csv', index=False)
+        df.to_csv(f'{output_path}/{char}_{station}.csv', index=False)
     if save_ecel:
-        df.to_excel(f'{output_path}/{station}_{chars}.xlsx', index=False)
+        df.to_excel(f'{output_path}/{char}_{station}.xlsx', index=False)
     return df
 
 
@@ -58,7 +62,7 @@ def txt_to_df(station: str, chars: str,
 # функция для преобразования .dat файлов с 
 # https://climexp.knmi.nl/selectfield_obs2.cgi?id=someone@somewhere
 # в DataFrame
-def dat_to_df(file_path: str, monthly=True, save_csv=True, save_ecel=False):
+def dat_to_df(file_path: str, monthly=True, save_csv=True, save_ecel=False) -> pd.DataFrame:
     df = pd.DataFrame(columns=montly_columns_names_en[1:] if monthly else ['Year', 'Month', 'Day', 'Measurement'])
     with open(file_path, 'r') as f:
         text = f.readlines()
