@@ -38,7 +38,7 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
             df1 = df_crn[(df_crn['Year']>=lmin) & (df_crn['Year']<=lmax)]
             df2 = df[(df['Year']>=lmin) & (df['Year']<=lmax)]
             x = np.array(df1.iloc[:, 1])
-            y = np.array(df2.iloc[:, i])
+            y = np.array(df2.iloc[:, i], dtype=float)
             if 9 <= i <= 12:
                 y = np.insert(y, 0, np.nan)
                 y = np.delete(y, -1)
@@ -55,29 +55,32 @@ def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, col
         rs[key] = np.concatenate([rs[key][8:12], rs[key][:8]])
         ps[key] = np.concatenate([ps[key][8:12], ps[key][:8]])
 
-    fig, ax = plt.subplots(figsize=(6,5))
-    plt.subplots_adjust(right=0.9)
-
-    for o, key in enumerate(ylabels):
-        
-        ax.plot(rs[key], label=key, color=colors[o])
-        ax.plot([j for j, p in enumerate(ps[key]) if p<0.05],
-                [rs[key][j] for j, p in enumerate(ps[key]) if p<0.05],
-                marker='D', linestyle = 'None', color=colors[o])
-    
-    ax.legend(frameon=False) 
-    ax.set_xticks([i for i in range(0,12)])
-    ax.set_xticklabels(m_names)
-    ax.set_ylim(ylim)
-    ax.set_xlabel('Months')
-    ax.set_ylabel('Pearson R')
-    ax.set_title(title)
-
     if savepath:
-        plt.savefig(f'{savepath}/dendroclim_monthly_{title}.png', dpi=200)
-    plt.close(fig)
+        fig, ax = plt.subplots(figsize=(6,5))
+        plt.subplots_adjust(right=0.9)
 
-    return fig, ax, rs, ps
+        for o, key in enumerate(ylabels):
+            
+            ax.plot(rs[key], label=key, color=colors[o])
+            ax.plot([j for j, p in enumerate(ps[key]) if p<0.05],
+                    [rs[key][j] for j, p in enumerate(ps[key]) if p<0.05],
+                    marker='D', linestyle = 'None', color=colors[o])
+        
+        ax.legend(frameon=False) 
+        ax.set_xticks([i for i in range(0,12)])
+        ax.set_xticklabels(m_names)
+        ax.set_ylim(ylim)
+        ax.set_xlabel('Months')
+        ax.set_ylabel('Pearson R')
+        ax.set_title(title)
+
+        
+        plt.savefig(f'{savepath}/dendroclim_monthly_{title}.png', dpi=200)
+        plt.close(fig)
+
+        return fig, ax, rs, ps
+    else:
+        return None, None, rs, ps
 
 
 def get_crn_climate_correlation(temperature:pd.DataFrame, precipitation:pd.DataFrame,
