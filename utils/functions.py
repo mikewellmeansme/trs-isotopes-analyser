@@ -33,7 +33,7 @@ def get_equation(x, y):
     """
     z, _ = get_polynomial_fit(x, y)
     sign = '' if z[1]<0 else '+'
-    result = f"$y={z[0]:0.3f}\;x{sign}{z[1]:0.2f}$"
+    result = f"y={z[0]:0.2f}x{sign}{z[1]:0.2f}"
     return result
 
 

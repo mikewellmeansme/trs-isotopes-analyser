@@ -58,17 +58,22 @@ def update_simple_graph(active_cell):
 def update_scatter_graph(active_cell):
     res, obs, clim = get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH)
     _, p = get_polynomial_fit(res[clim], res[obs])
+    eq = get_equation(res[clim], res[obs])
+
+    annotation_x = res[clim].max() - (res[clim].max() - res[clim].min())/2
+    annotation_y = res[obs].max()
 
     return  {
                 'data': [
-                    {'x': res[clim], 'y': res[obs], 'type' :'scatter', 'mode':'markers', 'marker': {'color': 'grey'}, 'text': res['Year'], 'name': 'Scatterplot'},
-                    {'x': res[clim], 'y': p(res[clim]), 'line': {'color':'black','width': 1,'dash':'dash'}, 'name': 'LS fit'},
+                    {'x': res[clim], 'y': res[obs], 'type' :'scatter', 'mode':'markers', 'marker': {'color': 'grey', 'size':9}, 'text': res['Year'], 'name': 'Scatterplot'},
+                    {'x': res[clim], 'y': p(res[clim]), 'line': {'color':'black','width': 2}, 'name': 'LS fit'},
                 ],
                 'layout': {
                     'title': f'{obs} {clim} trend',
                     'xaxis': {'title' : clim},
                     'yaxis': {'title' : obs},
-                    'showlegend': False
+                    'showlegend': False,
+                    'annotations': [{'x': annotation_x, 'y':annotation_y, 'text':eq, 'showarrow': False, 'font': {'size': 16}}]
                 }
             }
 
