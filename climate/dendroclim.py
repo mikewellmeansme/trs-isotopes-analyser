@@ -14,6 +14,21 @@ m_names = ['S', 'O', 'N', 'D', 'J', 'F', 'M', 'A', 'M ', 'J', 'J', 'A']
 default_ylim = [-0.6, 0.6]
 
 
+def get_monthly_correlation(df_crn:pd.DataFrame, df_clim:list, month: str, observ: str):
+    clim_result = df_clim[['Year', month]]
+
+    if month in ['September', 'October', 'November', 'December']:
+        clim_result['Year'] = clim_result['Year'] + 1
+    
+    coh_result = df_crn[['Year', observ]]
+
+    res = pd.merge(clim_result, coh_result, how='outer', on = 'Year')
+
+    r, p = dropna_pearsonr(res[observ], res[month])
+
+    return r, p
+
+
 def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, colors:list, title:str='',
                            ylim=default_ylim, savepath='', print_traceback=False):
     """

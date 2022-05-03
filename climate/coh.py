@@ -3,6 +3,8 @@ from climate.dendroclim import plot_mothly_dendroclim
 
 pd.options.mode.chained_assignment = None 
 
+month_names = ['September', 'October', 'November', 'December', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August']
+
 def get_multiple_values(d: dict, keys: list) -> list:
     """
 
@@ -73,7 +75,7 @@ def get_coh_corr_table(climate_data:dict, df_COH: pd.DataFrame,
             p_values[f'{column} {loc}' ] = ps
 
     df_COH_corr = {
-    'Month' : {'':  ['S', 'O', 'N', 'D', 'J', 'F', 'M', 'A', 'M ', 'J', 'J', 'A']},
+    'Month' : {'':  month_names},
     }
     for column in r_values:
         df_COH_corr[column] = dict()

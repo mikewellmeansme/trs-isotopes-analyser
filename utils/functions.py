@@ -1,12 +1,41 @@
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr, spearmanr
+from functools import reduce
+import operator
+
+def flatten(l:list):
+    return reduce(operator.concat, l)
+
 
 def dropna(x,y):
     x, y = np.array(x), np.array(y)
     nas = np.logical_or(np.isnan(x), np.isnan(y))
     x, y = x[~nas], y[~nas]
     return x, y
+
+
+def get_polynomial_fit(x, y, deg=1):
+    """
+    Returns :
+    z - Coeffitients of Least Squares polynomial fit
+    p - Function with coeffitients from z
+    """
+    x, y = dropna(x,y)
+    z = np.polyfit(x, y, deg)
+    p = np.poly1d(z)
+    return z, p
+
+
+def get_equation(x, y):
+    """
+    Returns equation for 1d LS polyfit
+    """
+    z, _ = get_polynomial_fit(x, y)
+    sign = '' if z[1]<0 else '+'
+    result = f"$y={z[0]:0.3f}\;x{sign}{z[1]:0.2f}$"
+    return result
+
 
 def dropna_pearsonr(x, y):
     x, y = dropna(x,y)

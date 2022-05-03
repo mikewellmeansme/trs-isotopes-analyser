@@ -12,7 +12,7 @@ from scipy.stats import pearsonr
 from matplotlib.offsetbox import AnchoredText
 from utils.df_preprocessing import monthly_climate_offset_and_clean
 
-SAVE = True
+SAVE = False
 
 months_names = ['January', 'February', 'March',
                 'April', 'May', 'June', 'July',
