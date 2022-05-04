@@ -65,3 +65,22 @@ def monthly_climate_offset_and_clean(df: pd.DataFrame) -> pd.DataFrame:
     
     df = df.drop(rows_to_drop)
     return df.reset_index(drop=True)
+
+
+def highlight_significant_cells(x):
+    """
+    Выделяет ячейку в DataFrame, если в ней p-value < 0.05. Я яейка должна иметь формат "0.00\n(p=0.0000)"
+    Используется в DataFrame.style.applymap
+    """
+    try:
+        r, p = x.split('=')
+    except:
+        return None
+    r = float(r[:-3])
+    p = float(p[:-1])
+    if p<0.05:
+        if r>0:
+            return 'background-color: lightgreen'
+        else:
+            return 'background-color: lightcoral'
+    return None
