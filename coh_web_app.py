@@ -18,7 +18,8 @@ from climate.data_preprocessing import load_data
 
 climate_data = load_data()
 dendroclim_df = pd.read_excel('output/dendroclim_COH_corr_FOR_WEB.xlsx')
-df_COH = pd.read_excel("input/COH/13C_allsites.xlsx")
+df_COH = pd.read_excel('input/COH/13C_allsites.xlsx')
+sites = pd.read_csv('input/Sites.csv')
 
 
 """@callback(Output('soure_table', 'data'), Input('dendroclim', 'active_cell'))
@@ -99,8 +100,24 @@ def update_scatter_graph(active_cell):
             }
 
 
+@callback(Output('sites-map', 'figure'), Input('dendroclim', 'active_cell'))
+def update_sites_map(active_cell):
+
+    if not active_cell:
+        return dict()
+    
+    active_cell['row']
+    
+    fig = px.scatter_mapbox(sites, lat="Latitude (degrees N)", lon="Longitude (degrees E)",
+                            hover_name="Site name", hover_data=["Site code", "Elevation"],
+                            zoom=3, height=800, width=1000)
+    fig.update_layout(title='Sites map', mapbox_style='open-street-map')
+
+    return fig
+
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+import plotly.express as px
 
 app.layout = html.Div(children=[
     dbc.Container([
@@ -138,6 +155,7 @@ app.layout = html.Div(children=[
                     ), width=6)
                 ]
         ),
+        dcc.Graph(id='sites-map')
         #dash_table.DataTable(id='soure_table'),
     ])
 ])
