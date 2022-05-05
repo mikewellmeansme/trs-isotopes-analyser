@@ -1,19 +1,13 @@
-# -*- coding: utf-8 -*-
+import plotly.express as px
 import pandas as pd
-import dash_bootstrap_components as dbc
-
 from dash import (
-    Dash,
     Input,
     Output,
-    callback,
-    dash_table,
-    dcc,
-    html
+    callback
 )
-from utils.functions import dropna_pearsonr, flatten, get_polynomial_fit, get_equation
-from utils.dash_utils import get_coh_and_clim, get_highlight_conditions
 from climate.data_preprocessing import load_data
+from utils.functions import dropna_pearsonr, get_polynomial_fit, get_equation
+from coh_app.dash_utils import get_coh_and_clim, get_highlight_conditions
 
 
 climate_data = load_data()
@@ -114,52 +108,3 @@ def update_sites_map(active_cell):
     fig.update_layout(title='Sites map', mapbox_style='open-street-map')
 
     return fig
-
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
-import plotly.express as px
-
-app.layout = html.Div(children=[
-    dbc.Container([
-        html.H1(children='COH climate correlation'),
-        dbc.Label('Click a cell in the table:'),
-        dash_table.DataTable(
-            dendroclim_df.to_dict('records'),
-            id='dendroclim',
-            style_data_conditional=flatten(get_highlight_conditions()) + flatten(get_highlight_conditions(negative=True)),
-            style_cell={
-                'whiteSpace': 'pre-line',
-                'textAlign': 'center'
-            }
-        ),
-        dbc.Alert(id='tbl_out', children=''),
-        dbc.Row(
-                [
-                    dbc.Col(dcc.Graph(
-                        id='scatter-graph',
-                        figure={
-                            'data': [],
-                            'layout': {
-                                'title': 'Scatter plot'
-                            }
-                        }
-                    ), width=6),
-                    dbc.Col(dcc.Graph(
-                        id='simple-graph',
-                        figure={
-                            'data': [],
-                            'layout': {
-                                'title': 'Plot'
-                            }
-                        }
-                    ), width=6)
-                ]
-        ),
-        dcc.Graph(id='sites-map')
-        #dash_table.DataTable(id='soure_table'),
-    ])
-])
-
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
