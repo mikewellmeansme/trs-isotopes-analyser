@@ -30,6 +30,13 @@ def update_table(active_cell):
 
 @callback(Output('tbl_out', 'children'), Input('dendroclim', 'active_cell'))
 def update_pearsonr(active_cell):
+
+    if not active_cell:
+        return ''
+    
+    if active_cell['column_id'] in ['Observation', 'Char']:
+        return ''
+    
     res, obs, clim = get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH)
 
     r, p = dropna_pearsonr(res[obs], res[clim])
@@ -38,6 +45,13 @@ def update_pearsonr(active_cell):
 
 @callback(Output('simple-graph', 'figure'), Input('dendroclim', 'active_cell'))
 def update_simple_graph(active_cell):
+
+    if not active_cell:
+        return dict()
+    
+    if active_cell['column_id'] in ['Observation', 'Char']:
+        return dict()
+    
     res, obs, clim = get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH)
 
     return  {
@@ -56,6 +70,13 @@ def update_simple_graph(active_cell):
 
 @callback(Output('scatter-graph', 'figure'), Input('dendroclim', 'active_cell'))
 def update_scatter_graph(active_cell):
+
+    if not active_cell:
+        return dict()
+    
+    if active_cell['column_id'] in ['Observation', 'Char']:
+        return dict()
+    
     res, obs, clim = get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH)
     _, p = get_polynomial_fit(res[clim], res[obs])
     eq = get_equation(res[clim], res[obs])
@@ -94,7 +115,7 @@ app.layout = html.Div(children=[
                 'textAlign': 'center'
             }
         ),
-        dbc.Alert(id='tbl_out'),
+        dbc.Alert(id='tbl_out', children=''),
         dbc.Row(
                 [
                     dbc.Col(dcc.Graph(
