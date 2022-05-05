@@ -15,6 +15,9 @@ from coh_app.callbacks import *
 
 coh_app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+# TODO: Центрирование карты на выбранной станции
+# TODO: График коэффициентов корреляции по месяцам
+# TODO: Добавить возможность отображения на карте станций ВМО и подсветка тех станций данные по которым использовались.
 
 coh_app.layout = html.Div(children=[
     dbc.Container([
