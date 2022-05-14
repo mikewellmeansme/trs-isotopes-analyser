@@ -29,7 +29,7 @@ def get_month_correlation(df_crn:pd.DataFrame, df_clim:pd.DataFrame, month: str,
     
     coh_result = df_crn[['Year', observ]]
 
-    res = pd.merge(clim_result, coh_result, how='outer', on = 'Year')
+    res = pd.merge(clim_result, coh_result, how='outer', on = 'Year').sort_values(by='Year').reset_index(drop=True)
     try:
         r, p = dropna_pearsonr(res[observ], res[month])
     except:

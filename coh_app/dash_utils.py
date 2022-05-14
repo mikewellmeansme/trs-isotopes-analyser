@@ -15,7 +15,7 @@ def get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH):
     
     coh_result = df_COH[['Year', observ]]
 
-    result = pd.merge(clim_result, coh_result, how='outer', on = 'Year')
+    result = pd.merge(clim_result, coh_result, how='outer', on = 'Year').sort_values(by='Year').reset_index(drop=True)
 
     return result, observ, f'{climate_key} {month}'
 
