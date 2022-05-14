@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from datetime import date
 
+month_names = ['September', 'October', 'November', 'December', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August']
+
 
 def row_to_date(row: pd.Series):
     return date(int(row['Year']),
@@ -45,6 +47,7 @@ def rotate_daily_climate(df: pd.DataFrame):
     precipitation = pd.DataFrame(precipitation)
     return temperature, precipitation
 
+
 def monthly_climate_offset_and_clean(df: pd.DataFrame) -> pd.DataFrame:
     """
     Смещает осенние и декабрьские данные так, чтобы при обработки брались данные с прошлого года,
@@ -84,3 +87,15 @@ def highlight_significant_cells(x):
         else:
             return 'background-color: lightcoral'
     return None
+
+
+def get_climate_df_mean(df, columns=month_names):
+    df = monthly_climate_offset_and_clean(df)
+    df['Mean'] = df[columns].mean(axis=1, skipna=True)
+    return df[['Year', 'Mean']]
+
+
+def get_climate_df_sum(df, columns=month_names):
+    df = monthly_climate_offset_and_clean(df)
+    df['Sum'] = df[columns].sum(axis=1, skipna=True)
+    return df[['Year', 'Sum']]
