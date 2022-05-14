@@ -2,7 +2,7 @@ import pandas as pd
 from os import listdir
 
 
-characterisitict = [
+characteristics = [
         'precipitation',
         'relative humidity',
         'sunshine duration',
@@ -10,11 +10,11 @@ characterisitict = [
         'vpd'
     ]
 
-def load_data(path='input/climate/real', characterisitict=characterisitict):
+def load_data(path='input/climate/real', characteristics=characteristics):
 
     data = dict()
 
-    for char in characterisitict:
+    for char in characteristics:
         for file in listdir(f'{path}/{char}'):
             loc_df = pd.read_csv(f'{path}/{char}/{file}')
             if 'WMO Index' in loc_df.columns:
