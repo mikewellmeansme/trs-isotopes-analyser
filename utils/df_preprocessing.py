@@ -159,6 +159,7 @@ def plot_total_real_grid_comparison(data_real:dict, data_grid:dict, stations:lis
             axes[i,j].plot(years, grid, label='Grid')
             axes[i,j].plot(years, real, label='Real')
             axes[i,j].set_ylim(ylims[char])
+            axes[i,j].legend(frameon=False)
 
             axes[0, j].set_title(station)
             axes[chars_amount-1, j].set_xlabel('Year')
