@@ -15,11 +15,6 @@ months = ['September', 'October', 'November', 'December', 'January', 'February',
 default_ylim = [-0.7, 0.8]
 
 
-def check_dataframe_columns(df:pd.DataFrame, columns:list, df_name:str='') -> None:
-    for column in columns:
-        if not column in df.columns:
-            raise KeyError(f'There is no column {column} in dataframe {df_name}!')
-
 
 def get_month_correlation(df_crn:pd.DataFrame, df_clim:pd.DataFrame, month: str, observ: str) -> tuple[float, float]:
     """
@@ -107,74 +102,6 @@ def plot_multiple_monthly_dendroclim(rs: Char2Months, ps: Char2Months,
 
     return fig, ax
 
-
-def plot_mothly_dendroclim(df_crn:pd.DataFrame, dfs_char:list, ylabels:list, colors:list, title:str='',
-                           ylim=default_ylim, savepath='', print_traceback=False):
-    """
-    df_crn: DataFrame c хронологией - первая колонка (Year) годы, вторая - хронология (названа как угодно)
-    dfs_char: список DataFrame'ов с характеристиками, с которыми требуется корреляция
-              первая колонка -- годы (Year), все остальные -- месяцы (названы как угодно)
-    ylabels: список названий характеристик
-    clors: цвета, которыми нужно рисовать линии для измерения
-    savepath: Путь, по которому будет сохранён график
-    print_traceback: Если True, то вывыодит текст ошибок
-    """
-    if len(dfs_char)!=len(ylabels) or len(dfs_char)!=len(colors):
-        raise Exception('Not every DataFrame have its own label!')
-
-    rs, ps = {name:[] for name in ylabels}, {name:[] for name in ylabels}
-    
-    for key, df in zip(ylabels, dfs_char):
-        l = list(set(df_crn['Year']) & set(df['Year']))
-        lmax, lmin = max(l), min(l)
-
-        for i in range(1, 13):
-            df1 = df_crn[(df_crn['Year']>=lmin) & (df_crn['Year']<=lmax)]
-            df2 = df[(df['Year']>=lmin) & (df['Year']<=lmax)]
-            x = np.array(df1.iloc[:, 1])
-            y = np.array(df2.iloc[:, i], dtype=float)
-            if 9 <= i <= 12:
-                y = np.insert(y, 0, np.nan)
-                y = np.delete(y, -1)
-            try:
-                r, p = dropna_pearsonr(x, y)
-            except:
-                if print_traceback:
-                    print(f'{x = }, {y = }')
-                    print(traceback.format_exc())
-                r, p = np.nan, np.nan
-            rs[key] += [r]
-            ps[key] += [p]
-    
-        rs[key] = np.concatenate([rs[key][8:12], rs[key][:8]])
-        ps[key] = np.concatenate([ps[key][8:12], ps[key][:8]])
-
-    if savepath:
-        fig, ax = plt.subplots(figsize=(6,5))
-        plt.subplots_adjust(right=0.9)
-
-        for o, key in enumerate(ylabels):
-            
-            ax.plot(rs[key], label=key, color=colors[o])
-            ax.plot([j for j, p in enumerate(ps[key]) if p<0.05],
-                    [rs[key][j] for j, p in enumerate(ps[key]) if p<0.05],
-                    marker='D', linestyle = 'None', color=colors[o])
-        
-        ax.legend(frameon=False) 
-        ax.set_xticks([i for i in range(0,12)])
-        ax.set_xticklabels(m_names)
-        ax.set_ylim(ylim)
-        ax.set_xlabel('Months')
-        ax.set_ylabel('Pearson R')
-        ax.set_title(title)
-
-        
-        plt.savefig(f'{savepath}/dendroclim_monthly_{title}.png', dpi=200)
-        plt.close(fig)
-
-        return fig, ax, rs, ps
-    else:
-        return None, None, rs, ps
 
 
 def get_crn_climate_correlation(temperature:pd.DataFrame, precipitation:pd.DataFrame,
