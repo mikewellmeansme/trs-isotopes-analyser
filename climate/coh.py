@@ -6,7 +6,7 @@ from climate.dendroclim import (
     plot_multiple_monthly_dendroclim
 )
 from utils.plots import (
-    combine_hex_colors,
+    interpotate_between_colors,
     month_names,
     m_names,
     ind_titels,
@@ -78,11 +78,7 @@ def plot_multiple_coh_corr(r_values, p_values, char, ind, ylim0:float=-.75, ylim
             if char in r_values[key]:
                 max_i+=1
 
-    colors = []
-
-    for i in range(1, max_i+1):
-        color = combine_hex_colors({"ff1100": 1.0 - i*(1.0/max_i), "0012ff": i*(1.0/max_i)})
-        colors.append(color)
+    colors = interpotate_between_colors(['#cc3232', '#e7b416', '#1b7821', '#267ef1', '#ff11c2'], max_i)
 
     i = 0
     for key in r_values:
