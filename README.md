@@ -18,3 +18,5 @@ Used in:
 
 * Zharkov, M.S.; Fonti, M.V.; Trushkina, T.V.; Barinov, V.V.; Taynik, A.V.; Porter, T.J.; Saurer, M.; Churakova, O.V. Mixed Temperature-Moisture Signal in δ18O Records of Boreal Conifers from the Permafrost Zone. Atmosphere 2021, 12, 1416. https://doi.org/10.3390/atmos12111416
 
+* Olga V. Churakova (Sidorova); Marina V. Fonti; Valentin V. Barinov; Mikhail S. Zharkov; Anna V. Taynik; Tatyana V. Trushkina; Alexander I. Bondarev; Alexander V. Kirdyanov; Alberto Arzac and Matthias Saurer. Towards the third millennium changes in Siberian triple tree-ring stable isotopes. Forests 2022, 13, x, https://doi.org/10.3390/xxxxxx
+
