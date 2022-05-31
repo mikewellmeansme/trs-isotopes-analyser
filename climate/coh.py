@@ -86,13 +86,15 @@ def plot_multiple_coh_corr(r_values, p_values, char, ind, ylim0:float=-.75, ylim
             if char in r_values[key]:
                 color = colors[i]
                 i+=1 
-                ax.plot(r_values[key][char], label=key, color=color)
+                ax.plot(r_values[key][char],  color=color, linewidth =.5)
                 ax.plot([j for j, p in enumerate(p_values[key][char]) if p and p<0.05],
                     [r_values[key][char][j] for j, p in enumerate(p_values[key][char]) if p and p<0.05],
                     marker='D', linestyle = 'None', color=color)
+                ax.plot([-100], [-100], marker='D', linewidth =.5, color=color, label=key)
 
     ax.set_xticks([i for i in range(0,12)])
     ax.set_xticklabels(m_names)
+    ax.set_xlim([-.5, 11.5])
     ax.set_ylim([ylim0, ylim1])
     ax.set_xlabel('Months')
     ax.set_ylabel('Pearson R')
