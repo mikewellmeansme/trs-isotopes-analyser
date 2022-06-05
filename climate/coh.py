@@ -130,13 +130,12 @@ def coh_corr_to_table(r_values, p_values, climate_data):
         ps = p_values[key]
         for char in rs:
             if char in df_COH_corr[column]:
-                for r,p in zip(rs[char], ps[char]):
-                    if r and p:
-                        text = f'{r:.2f}\n(p={p:.3f})'
+                for r, p in zip(rs[char], ps[char]):
+                    if pd.isnull(r) and pd.isnull(p):
+                        text = ''
                     else:
-                        text = ''
-                    if isnan(r) and isnan(p):
-                        text = ''
+                        text = f'{r:.2f}\n(p={p:.3f})'
+                    
                     df_COH_corr[column][char].append(text)
 
     df_reform = {(outerKey, innerKey): values for outerKey, innerDict in df_COH_corr.items() for innerKey, values in innerDict.items()}
