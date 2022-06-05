@@ -1,5 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from numpy import isnan
+from dataclasses import dataclass
 
 from climate.dendroclim import (
     get_multiple_monthly_dendroclim,
@@ -14,6 +16,17 @@ from utils.plots import (
 )
 
 pd.options.mode.chained_assignment = None 
+
+
+@dataclass(frozen=True)
+class COHKey:
+    site_region : str
+    site_index : str
+    station_location : str
+
+    def __repr__(self) -> str:
+        return f'{self.site_region}_{self.site_index} {self.station_location}'
+
 
 #TODO: Add comments and function signatures
 
@@ -32,7 +45,7 @@ def get_multiple_values(d: dict, keys: list) -> list:
 
 
 def get_coh_corr(climate_data:dict, df_COH: pd.DataFrame,
-                 locs: list, regs: list, ind_titels: dict):
+                 locs: list, regs: list, ind_titels: dict) -> tuple[dict[COHKey, dict], dict[COHKey, dict]]:
     r_values, p_values = dict(), dict()
     for ind in ind_titels:
         for loc, reg in zip(locs, regs):
@@ -45,16 +58,18 @@ def get_coh_corr(climate_data:dict, df_COH: pd.DataFrame,
 
             rs, ps = get_multiple_monthly_dendroclim(df_COH, chars, column)
 
-            r_values[f'{column} {loc}'] = rs
-            p_values[f'{column} {loc}' ] = ps
+            coh_key = COHKey(reg, ind, loc) #f'{reg}_{ind} {loc}'
+
+            r_values[coh_key] = rs
+            p_values[coh_key] = ps
     return r_values, p_values
 
 
 def plot_coh_corr(r_values, p_values, ind_titels: dict, char_to_color: dict,
                  fig_savepath:str='', years: str='', ylim0:float=-.7, ylim1:float=.8):
     for key in r_values:
-        reg, _ = key.split('_')
-        ind, loc = _.split() 
+        ind = key.site_index
+        loc = key.station_location
         title = f'{loc} {ind_titels[ind]} {years}'
         
         rs = r_values[key]
@@ -68,24 +83,16 @@ def plot_coh_corr(r_values, p_values, ind_titels: dict, char_to_color: dict,
 
 
 #TODO: Refactor
-def plot_multiple_coh_corr(r_values, p_values, char, ind, ylim0:float=-.75, ylim1:float=1.0):
+def plot_multiple_coh_corr(r_values:dict, p_values:dict,
+                           char:str, ind:str, reg_to_color:dict[str, str],
+                           ylim0:float=-.75, ylim1:float=1.0):
     fig, ax = plt.subplots(figsize=(6,5), dpi=300)
     plt.subplots_adjust(right=0.9)
 
-    max_i = 0
     for key in r_values:
-        if ind in key:
+        if ind == key.site_index:
             if char in r_values[key]:
-                max_i+=1
-
-    colors = interpotate_between_colors(['#cc3232', '#e7b416', '#1b7821', '#267ef1', '#ff11c2'], max_i)
-
-    i = 0
-    for key in r_values:
-        if ind in key:
-            if char in r_values[key]:
-                color = colors[i]
-                i+=1 
+                color = reg_to_color[key.site_region]
                 ax.plot(r_values[key][char],  color=color, linewidth =.5)
                 ax.plot([j for j, p in enumerate(p_values[key][char]) if p and p<0.05],
                     [r_values[key][char][j] for j, p in enumerate(p_values[key][char]) if p and p<0.05],
@@ -100,6 +107,7 @@ def plot_multiple_coh_corr(r_values, p_values, char, ind, ylim0:float=-.75, ylim
     ax.set_ylabel('Pearson R')
     ax.set_title(f"{char_2_characteristic[char]} ({ind_titels[ind]})")
     ax.legend(loc=(1.04,0))
+
     return ax, fig
 
 
@@ -107,23 +115,29 @@ def coh_corr_to_table(r_values, p_values, climate_data):
     df_COH_corr = {
     'Month' : {'':  month_names},
     }
-    for column in r_values:
+    for key in r_values:
+        reg = key.site_region
+        ind = key.site_index
+        loc = key.station_location
+        column = f'{reg}_{ind} {loc}'
         df_COH_corr[column] = dict()
-        loc = column.split()[-1]
+
         for char in ['Temp', 'Prec', 'VPD', 'SD', 'RH']:
             if f'{char}_{loc}' in climate_data:
                 df_COH_corr[column][char] = []
 
-        rs = r_values[column]
-        ps = p_values[column]
-        for key in rs:
-            if key in df_COH_corr[column]:
-                for r,p in zip(rs[key], ps[key]):
+        rs = r_values[key]
+        ps = p_values[key]
+        for char in rs:
+            if char in df_COH_corr[column]:
+                for r,p in zip(rs[char], ps[char]):
                     if r and p:
                         text = f'{r:.2f}\n(p={p:.3f})'
                     else:
                         text = ''
-                    df_COH_corr[column][key].append(text)
+                    if isnan(r) and isnan(p):
+                        text = ''
+                    df_COH_corr[column][char].append(text)
 
     df_reform = {(outerKey, innerKey): values for outerKey, innerDict in df_COH_corr.items() for innerKey, values in innerDict.items()}
     df_reform = pd.DataFrame(df_reform)
