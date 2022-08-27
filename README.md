@@ -1,18 +1,20 @@
-# Climate master
+# Tree-Ring Stable Isotopes Analyser
 
-Application for climate data processing and visualisation.
+Application for tree-ring stable isotopes data analysis:
+
+Current features:
+
+* Correlation between triple tree-ring stable isotopes data and monthly climate data
+
+* Trending monthly climate data
+
+* Supplementing monthly climate data with grid data
+
+* Visualisation of obtained results
 
 Input data available in folder `input`.
 
-Climate data sources are listed [here](input/climate/real/sources.txt) for the real data and [here](input/climate/grid/sources.txt) for the grid data.
-
-Final images and tables available in folder `final output`.
-
-Current plots and tables obtained in .ipynb files from `notebooks` folder.
-
-`climate` package contains modules for climate data processing.
-
-`utils` package contains modules with utility functions.
+Results are available in folder `final output`.
 
 Used in:
 
