@@ -7,7 +7,7 @@ from dash import (
 )
 from climate.data_preprocessing import load_data
 from utils.functions import dropna_pearsonr, get_polynomial_fit, get_equation
-from coh_app.dash_utils import get_coh_and_clim, get_highlight_conditions
+from app.dashboard.dash_utils import get_coh_and_clim, get_highlight_conditions
 
 
 climate_data = load_data()

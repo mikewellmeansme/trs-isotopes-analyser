@@ -9,17 +9,17 @@ from dash import (
     html
 )
 from utils.functions import  flatten
-from coh_app.dash_utils import get_highlight_conditions
-from coh_app.callbacks import *
+from app.dashboard.dash_utils import get_highlight_conditions
+from app.dashboard.callbacks import *
 
 
-coh_app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+dashboard = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # TODO: Центрирование карты на выбранной станции
 # TODO: График коэффициентов корреляции по месяцам
 # TODO: Добавить возможность отображения на карте станций ВМО и подсветка тех станций данные по которым использовались.
 
-coh_app.layout = html.Div(children=[
+dashboard.layout = html.Div(children=[
     dbc.Container([
         html.H1(children='COH climate correlation'),
         dbc.Label('Click a cell in the table:'),

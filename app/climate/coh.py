@@ -83,21 +83,35 @@ def plot_coh_corr(r_values, p_values, ind_titels: dict, char_to_color: dict,
 
 
 #TODO: Refactor
-def plot_multiple_coh_corr(r_values:dict, p_values:dict,
-                           char:str, ind:str, reg_to_color:dict[str, str],
-                           ylim0:float=-.75, ylim1:float=1.0):
-    fig, ax = plt.subplots(figsize=(6,5), dpi=300)
+def plot_multiple_coh_corr(
+        r_values:dict,
+        p_values:dict,
+        char:str,
+        ind:str,
+        reg_to_color:dict[str, str],
+        ylim0:float=-.75,
+        ylim1:float=1.0,
+        ax = None,
+        linestyle:str='-',
+        marker:str='D'
+    ):
+    
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(6,5), dpi=300)
+    else:
+        fig = ax.figure
+    
     plt.subplots_adjust(right=0.9)
 
     for key in r_values:
         if ind == key.site_index:
             if char in r_values[key]:
                 color = reg_to_color[key.site_region]
-                ax.plot(r_values[key][char],  color=color, linewidth =.5)
+                ax.plot(r_values[key][char],  color=color, linewidth =.5, linestyle=linestyle)
                 ax.plot([j for j, p in enumerate(p_values[key][char]) if p and p<0.05],
                     [r_values[key][char][j] for j, p in enumerate(p_values[key][char]) if p and p<0.05],
-                    marker='D', linestyle = 'None', color=color)
-                ax.plot([-100], [-100], marker='D', linewidth =.5, color=color, label=key)
+                    marker=marker, linestyle = 'None', color=color)
+                ax.plot([-100], [-100], marker=marker, linewidth =.5, color=color, label=key, linestyle=linestyle)
 
     ax.set_xticks([i for i in range(0,12)])
     ax.set_xticklabels(m_names)
@@ -108,7 +122,7 @@ def plot_multiple_coh_corr(r_values:dict, p_values:dict,
     ax.set_title(f"{char_2_characteristic[char]} ({ind_titels[ind]})")
     ax.legend(loc=(1.04,0))
 
-    return ax, fig
+    return fig, ax
 
 
 def coh_corr_to_table(r_values, p_values, climate_data):
