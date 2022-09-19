@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from app.isotope_data import IsotopeData
 from app.site_data import SiteData
@@ -55,3 +56,33 @@ class TRSIsotopesAnalyser:
     def __get_isotopes_by_pattern__(self, isotope, site_pattern: Optional[Dict]=None) -> List[IsotopeData]:
         return list(filter(lambda i: i.match(isotope, site_pattern), self.isotopes))
     
+    def boxplot_isotopes(
+            self,
+            isotope: str,
+            ylabel: Optional[str] = None,
+            subplots_kws: Optional[Dict] = None,
+            region_to_color: Optional[Dict[str, str]] = None,
+        ) -> Tuple[Figure, Axes]:
+
+        subplots_kws = subplots_kws or {}
+        isotopes = self.__get_isotopes_by_pattern__(isotope)
+        data = [list(i.data['Value'].dropna()) for i in isotopes]
+        labels = [i.site.code for i in isotopes]
+        regions = [i.site.region for i in isotopes]
+        colors = [region_to_color[region] for region in regions]
+
+        fig, axes = plt.subplots(**subplots_kws)
+        bp = axes.boxplot(
+            data
+        )
+
+        if region_to_color:
+            for el in ['boxes']:
+                for patch, color in zip(bp[el], colors):
+                    patch.set_color(color)
+        
+        axes.set_xticklabels(labels, rotation=-90)
+        axes.set_ylabel(ylabel or isotope)
+        axes.set_xlabel('Site')
+
+        return fig, axes
