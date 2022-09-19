@@ -52,5 +52,6 @@ class TRSIsotopesAnalyser:
     def __get_sites_by_pattern__(self, pattern: Dict) -> List[SiteData]:
         return list(filter(lambda s: s.match(pattern), self.sites))
     
-    def __get_isotopes_by_pattern__(self, pattern: Dict) -> List[IsotopeData]:
-        return list(filter(lambda i: i.match(pattern), self.isotopes))
+    def __get_isotopes_by_pattern__(self, isotope, site_pattern: Optional[Dict]=None) -> List[IsotopeData]:
+        return list(filter(lambda i: i.match(isotope, site_pattern), self.isotopes))
+    
