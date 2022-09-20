@@ -86,7 +86,7 @@ class TRSIsotopesAnalyser:
                 for patch, color in zip(bp[el], colors):
                     patch.set_color(color)
         
-        axes.set_xticklabels(labels, rotation=-90)
+        axes.set_xticklabels(labels, rotation=90)
         axes.set_ylabel(ylabel or isotope)
         axes.set_xlabel('Site')
 
