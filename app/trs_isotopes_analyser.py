@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from app.isotope_data import IsotopeData
 from app.site_data import SiteData
 from matplotlib.figure import Figure, Axes
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple, Callable
 
 
 class TRSIsotopesAnalyser:
@@ -59,6 +59,7 @@ class TRSIsotopesAnalyser:
     def boxplot_isotopes(
             self,
             isotope: str,
+            sort_by: Callable[[IsotopeData], int] = None,
             ylabel: Optional[str] = None,
             subplots_kws: Optional[Dict] = None,
             region_to_color: Optional[Dict[str, str]] = None,
@@ -66,6 +67,10 @@ class TRSIsotopesAnalyser:
 
         subplots_kws = subplots_kws or {}
         isotopes = self.__get_isotopes_by_pattern__(isotope)
+        
+        if sort_by:
+            isotopes = sorted(isotopes, key=sort_by)
+        
         data = [list(i.data['Value'].dropna()) for i in isotopes]
         labels = [i.site.code for i in isotopes]
         regions = [i.site.region for i in isotopes]
