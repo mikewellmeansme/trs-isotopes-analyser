@@ -5,15 +5,15 @@ from dash import (
     Output,
     callback
 )
-from climate.data_preprocessing import load_data
-from utils.functions import dropna_pearsonr, get_polynomial_fit, get_equation
+from app.climate.data_preprocessing import load_data
+from app.utils.functions import dropna_pearsonr, get_polynomial_fit, get_equation
 from app.dashboard.dash_utils import get_coh_and_clim, get_highlight_conditions
 
 
-climate_data = load_data()
-dendroclim_df = pd.read_excel('output/dendroclim_COH_corr_FOR_WEB.xlsx')
-df_COH = pd.read_excel('input/COH/13C_allsites.xlsx')
-sites = pd.read_csv('input/Sites.csv')
+climate_data = load_data('../input/climate/real',)
+dendroclim_df = pd.read_excel('../output/dendroclim_COH_corr_FOR_WEB.xlsx')
+df_COH = pd.read_excel('../input/COH/COH_allsites.xlsx')
+sites = pd.read_csv('../input/Sites.csv')
 
 
 """@callback(Output('soure_table', 'data'), Input('dendroclim', 'active_cell'))
