@@ -56,7 +56,7 @@ class TRSIsotopesAnalyser:
     def __get_isotopes_by_pattern__(self, isotope, site_pattern: Optional[Dict]=None) -> List[IsotopeData]:
         return list(filter(lambda i: i.match(isotope, site_pattern), self.isotopes))
     
-    def boxplot_isotopes(
+    def boxplot(
             self,
             isotope: str,
             sort_by: Callable[[IsotopeData], int] = None,
