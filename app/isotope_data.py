@@ -15,10 +15,8 @@ class IsotopeData:
         self.data = data[['Year', column]].rename(columns={column: 'Value'})
     
     def match(self, isotope: str, site_pattern: Optional[Dict] = None) -> bool:
+        
         if self.isotope != isotope:
             return False
         
-        if not self.site.match(site_pattern):
-            return False
-        
-        return True
+        return self.site.match(site_pattern)
