@@ -1,6 +1,6 @@
 __pycache__
 .idea
-input/old
-input/COH
+data/old
+data/COH
 output
-playground.ipynb
+notebooks
