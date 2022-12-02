@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 from app.isotope_data import IsotopeData
 from app.site_data import SiteData
 from matplotlib.figure import Figure, Axes
+from os import listdir
 from typing import Dict, Optional, List, Tuple, Callable
+from zhutils.dataframes import MonthlyDataFrame
 
 
 class TRSIsotopesAnalyser:
@@ -48,8 +50,11 @@ class TRSIsotopesAnalyser:
     
     @staticmethod
     def _load_climate_(path: str) -> Dict[str, Dict[str, pd.DataFrame]]:
-        # TODO
-        return
+        result = {}
+        for file in listdir(path):
+            df = MonthlyDataFrame(pd.read_csv(f'{path}/{file}'))
+            result[file.split('.')[0]] = df
+        return result
     
     def __get_sites_by_pattern__(self, pattern: Dict) -> List[SiteData]:
         return list(filter(lambda s: s.match(pattern), self.sites))
