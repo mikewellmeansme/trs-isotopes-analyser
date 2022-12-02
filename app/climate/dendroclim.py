@@ -5,7 +5,7 @@ import matplotlib.dates as dates
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 import traceback
-from utils.functions import dropna_pearsonr
+from app.utils.functions import dropna_pearsonr
 
 sys.path.append('..')
 # Функции построения дендроклиматического отклика

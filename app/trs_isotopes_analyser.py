@@ -48,6 +48,7 @@ class TRSIsotopesAnalyser:
     
     @staticmethod
     def _load_climate_(path: str) -> Dict[str, Dict[str, pd.DataFrame]]:
+        # TODO
         return
     
     def __get_sites_by_pattern__(self, pattern: Dict) -> List[SiteData]:
@@ -93,3 +94,7 @@ class TRSIsotopesAnalyser:
         axes.set_xlabel('Site')
 
         return fig, axes
+    
+    def heatmap(self) -> Tuple[Figure, Axes]:
+        # TODO
+        pass
