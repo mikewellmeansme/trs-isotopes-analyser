@@ -74,7 +74,6 @@ class TRSIsotopesAnalyser:
         data = [list(i.data['Value'].dropna()) for i in isotopes]
         labels = [i.site.code for i in isotopes]
         regions = [i.site.region for i in isotopes]
-        colors = [region_to_color[region] for region in regions]
 
         fig, axes = plt.subplots(**subplots_kws)
         bp = axes.boxplot(
@@ -82,6 +81,9 @@ class TRSIsotopesAnalyser:
         )
 
         if region_to_color:
+            
+            colors = [region_to_color[region] for region in regions]
+
             for el in ['boxes']:
                 for patch, color in zip(bp[el], colors):
                     patch.set_color(color)
