@@ -1,5 +1,6 @@
 __pycache__
 .idea
-data/processed/COH
+data/*/isotopes
+results/Paper_003
 output
 notebooks
