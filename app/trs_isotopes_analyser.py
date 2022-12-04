@@ -5,8 +5,10 @@ from app.isotope_data import IsotopeData
 from app.site_data import SiteData
 from matplotlib.figure import Figure, Axes
 from os import listdir
+from scipy.stats import mannwhitneyu
 from typing import Dict, Optional, List, Tuple, Callable
-from zhutils.dataframes import MonthlyDataFrame
+from zhutils.dataframes import MonthlyDataFrame, SuperbDataFrame
+from zhutils.stats import dropna_mannwhitneyu
 
 
 class TRSIsotopesAnalyser:
@@ -99,6 +101,30 @@ class TRSIsotopesAnalyser:
         axes.set_xlabel('Site')
 
         return fig, axes
+    
+    def mannwhitneyu(
+            self,
+            isotope: str,
+            sort_by: Callable[[IsotopeData], int] = None
+        ) -> pd.DataFrame:
+
+        isotopes = self.__get_isotopes_by_pattern__(isotope)
+        
+        if sort_by:
+            isotopes = sorted(isotopes, key=sort_by)
+        
+        df = pd.concat(
+            [
+                i.data.rename(columns={'Value': i.site.code}).set_index('Year') 
+                for i in isotopes
+            ], 
+            axis=1
+        ).reset_index()
+
+        return SuperbDataFrame(
+            df.drop(columns=['Year'])).\
+            corr_and_p_values(highlight_from=0.01, corr_function=dropna_mannwhitneyu
+        )
     
     def heatmap(self) -> Tuple[Figure, Axes]:
         # TODO
