@@ -1,0 +1,26 @@
+Region,Site name,Site #,Site code,Latitude (degrees N),Longitude (degrees E),Elevation,Site type (1=d13C; 2=d18O; 3=d13C&d18O; 4=triple),Station name,WMO station code
+USA,"Reserve West - Bonanza Creek LTER site, central Alaska",1,ALA,64.7,-148.3,290.0,1.0,Fairbanks,70261
+Canada,Mackenzie Delta,2,CAN,68.4,-133.8166667,3.0,4.0,Inuvik,71957
+Canada,Mackenzie Delta,3,MZ,68.4,-133.8166667,3.0,4.0,Inuvik,71957
+Norway,Gutulia,4,GUT,62.0,12.0,800.0,4.0,Gutulia,
+Norway,"Forfjorddalen, Forfjord, Vester?len",5,FOR,68.8,15.73333333,10.0,1.0,,
+Sweden,Torneträsk,6,TOR,68.0,18.0,,1.0,Abisko,2022 ABISKO
+Finland,Laanila,7,LAN,68.0,27.0,220.0,1.0,IvaloAirport,
+Finland,Kessi Inari,8,INA,68.15,28.06666667,150.0,4.0,KessiInari,
+Finland,Ilomantsi,9,ILO,62.15,30.15,200.0,4.0,Ilomantsi,2919
+Russian Federation,"Khibini, Kola Peninsula",10,KOL,67.0,33.0,761.0,3.0,Kandalaksa,22217
+Russian Federation,Moreju,11,MOR,68.0,60.0,40.0,3.0,KhosedaKhard,23219
+Russian Federation,Altai,12,AL,50.4,87.55,2300.0,3.0,Barnaul,29838
+Russian Federation,Altai,13,ALT,50.63333333,89.1,2280.0,3.0,Mugur-Aksy,36278
+Russian Federation,Khakasia,14,KHAK,54.4,89.95,477.0,3.0,Minusinsk,29866
+Russian Federation,Chadan,15,CH,51.46666667,91.96666667,832.0,3.0,Chadan,36087
+Russian Federation,Eniseysk,16,ENE,58.0,92.0,150.0,3.0,Eniseysk,29263
+Russian Federation,Ersin,17,HO,50.83333333,93.01666667,1502.0,3.0,Ersin,36307
+Russian Federation,Tura,18,TUR,64.53333333,100.2333333,168.0,3.0,Tura,24507
+Russian Federation,Taimyr Peninsula,19,TAY,68.0,103.0,300.0,4.0,Khatanga,20891
+Russian Federation,Irkutsk,20,IRK,52.0,104.0,530.0,1.0,Irkutsk,30710
+Russian Federation,Olkhon Island,21,OLH,53.28333333,107.6333333,530.0,2.0,Irkutsk,30710
+Russian Federation,Davan Pass,22,DAV,55.85,108.9166667,1400.0,1.0,Nizneangarsk,30433
+Russian Federation,Spasskaya Pad,23,PYAD,62.23333333,129.6166667,220.0,2.0,Jakutsk,24959
+Russian Federation,"Suntar Khayata, Yakutia",24,YAK,63.0,139.0,900.0,1.0,Chokurdakh,21946
+Russian Federation,Indigirka,25,IND,69.0,148.0,350.0,3.0,Chokurdakh,21946

@@ -1,6 +1,6 @@
 __pycache__
 .idea
-input/old
-input/COH
+data/*/isotopes
+results/Paper_003
 output
-playground.ipynb
+notebooks

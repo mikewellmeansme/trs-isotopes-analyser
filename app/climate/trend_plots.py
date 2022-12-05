@@ -10,7 +10,7 @@ import os
 
 from scipy.stats import pearsonr
 from matplotlib.offsetbox import AnchoredText
-from utils.df_preprocessing import monthly_climate_offset_and_clean
+from app.utils.df_preprocessing import monthly_climate_offset_and_clean
 
 SAVE = False
 

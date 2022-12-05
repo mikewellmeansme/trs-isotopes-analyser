@@ -12,9 +12,9 @@ Current features:
 
 * Visualisation of obtained results
 
-Input data available in folder `input`.
+Input data available in folder `data`.
 
-Results are available in folder `final output`.
+Results for corresponding papers are available in folder `results`.
 
 Used in:
 

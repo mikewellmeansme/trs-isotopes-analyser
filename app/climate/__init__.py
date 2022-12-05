@@ -1,1 +1,2 @@
-from . import dendroclim, trend_plots, txt_to_tables, weather_gc_ca
+import app.climate.txt_to_tables
+import app.climate.weather_gc_ca
