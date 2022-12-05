@@ -1,5 +1,6 @@
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 from app.isotope_data import IsotopeData
 from app.site_data import SiteData
@@ -208,6 +209,127 @@ class TRSIsotopesAnalyser:
 
         return result
     
-    def heatmap(self) -> Tuple[Figure, Axes]:
-        # TODO
-        pass
+    def _get_wide_comparison_(
+            self,
+            isotopes: List[str],
+            climate_index: str,
+            prev_months: List[int],
+            curr_months: List[int],
+            compare_by: ComparisonFunction = compare_pearsonr,
+            sort_by: Callable[[IsotopeData], int] = None,
+            start_year: Optional[int] = None,
+            end_year: Optional[int] = None
+        ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+
+        months = [f'{Months(i).name} prev' for i in prev_months] \
+               + [Months(i).name for i in curr_months]
+
+        stats = []
+        p_vals = []
+
+        for isotope in isotopes:
+
+            df = self.compare_with_climate(
+                isotope,
+                climate_index,
+                compare_by=compare_by,
+                sort_by=sort_by,
+                start_year=start_year,
+                end_year=end_year
+            )
+
+            stats_wide = df.pivot(index='Site Code', values='Stat', columns='Month')[months]
+            p_values_wide = df.pivot(index='Site Code', values='P-value', columns='Month')[months]
+
+            isotopes_data = self.__get_isotopes_by_pattern__(isotope)
+
+            if sort_by:
+                isotopes_data = sorted(isotopes_data, key=sort_by)
+            
+            site_codes = [i.site.code for i in isotopes_data if i.site.code in stats_wide.index]
+
+            stats_wide = stats_wide.loc[site_codes]
+            p_values_wide = p_values_wide.loc[site_codes]
+            
+            stats_wide.index = [f'{isotope}_{el}' for el in stats_wide.index]
+            p_values_wide.index = [f'{isotope}_{el}' for el in p_values_wide.index]
+
+            stats.append(stats_wide)
+            p_vals.append(p_values_wide)
+
+        stats = (
+            pd.
+            concat(stats).
+            rename(columns={f'{Months(i).name} prev': Months(i).name for i in prev_months})
+        )
+
+        p_vals = (
+            pd.
+            concat(p_vals).
+            rename(columns={f'{Months(i).name} prev': Months(i).name for i in prev_months})
+        )
+
+        return stats, p_vals
+    
+    def heatmap(
+            self,
+            isotopes: List[str],
+            climate_index: str,
+            prev_months: List[int],
+            curr_months: List[int],
+            isotope_to_color: Dict[str, str],
+            compare_by: ComparisonFunction = compare_pearsonr,
+            sort_by: Callable[[IsotopeData], int] = None,
+            start_year: Optional[int] = None,
+            end_year: Optional[int] = None,
+            min_p_value: float = 0.05
+        ) -> sns.matrix.ClusterGrid:
+
+        stats, mask = self._get_wide_comparison_(
+            isotopes,
+            climate_index,
+            prev_months,
+            curr_months,
+            compare_by,
+            sort_by,
+            start_year,
+            end_year
+        )
+
+        row_colors = [isotope_to_color[i.split('_')[0]] for i in stats.index]
+
+        hm = sns.clustermap(
+            data=stats.fillna(0),
+            mask=mask.fillna(1) > min_p_value,
+            cmap="seismic",
+            col_cluster=False,
+            row_cluster=False,
+            yticklabels=stats.index,
+            row_colors=row_colors,
+            linewidths=1,
+            linecolor='gray',
+            cbar_pos=(0.12, .6, .05, .18),
+            cbar_kws=dict(ticks=[-.6, -.3, 0, .3, .6]),
+            vmin=-0.7, vmax=0.7
+        )
+        hm.ax_heatmap.set_title(climate_index, fontsize = 20)
+        hm.ax_heatmap.set_xlabel('Month', fontsize = 16)
+        hm.ax_heatmap.set_xticklabels(hm.ax_heatmap.get_xticklabels(), rotation = 45)
+        hm.ax_heatmap.yaxis.set_tick_params(labelsize=10)
+
+        hm.ax_heatmap.set_ylabel('Site code', fontsize = 16)
+        hm.ax_cbar.set_ylabel('Pearson R')
+        hm.ax_cbar.yaxis.tick_left()
+        hm.ax_cbar.yaxis.set_label_position("left")
+
+        # TODO: get rid of the hard-coded values
+
+        text_pos = max(hm.ax_row_colors.get_ylim())/2
+        hm.ax_row_colors.text(-3.7, text_pos-2, '$-$ $\delta^{2}H$', fontsize = 16)
+        hm.ax_row_colors.text(-3.7, text_pos, '$-$ $\delta^{13}C$', fontsize = 16)
+        hm.ax_row_colors.text(-3.7, text_pos+2, '$-$ $\delta^{18}O$', fontsize = 16)
+        hm.ax_row_colors.add_patch(plt.Rectangle((-5, text_pos-2-1+.15), 1, 1,facecolor='#2DFAA5', clip_on=False,linewidth = 1))
+        hm.ax_row_colors.add_patch(plt.Rectangle((-5, text_pos-1+.15), 1, 1,facecolor='#E3D41E', clip_on=False,linewidth = 1))
+        hm.ax_row_colors.add_patch(plt.Rectangle((-5, text_pos+2-1+.15), 1, 1,facecolor='#FA5D2A', clip_on=False,linewidth = 1))
+
+        return hm
