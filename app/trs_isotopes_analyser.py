@@ -14,9 +14,14 @@ from zhutils.stats import dropna_mannwhitneyu
 class TRSIsotopesAnalyser:
     sites: List[SiteData]
     isotopes: List[IsotopeData]
-    climate_data = Dict[str, Dict[str, pd.DataFrame]]
+    climate_data = Dict[str, MonthlyDataFrame]
     
-    def __init__(self, sites_path: str, isotopes_path: str, climate_path: str) -> None:
+    def __init__(
+            self,
+            sites_path: str,
+            isotopes_path: str,
+            climate_path: str
+        ) -> None:
         self.sites = self._load_sites_(sites_path)
         self.isotopes = self._load_isotopes_(isotopes_path)
         self.climate_data = self._load_climate_(climate_path)
@@ -45,16 +50,19 @@ class TRSIsotopesAnalyser:
     def _load_dataframe_(path) -> pd.DataFrame:
         if path.lower().endswith('.xlsx') or path.lower().endswith('.xls'):
             return pd.read_excel(path)
-        elif path.lower().endswith('csv'):
+        elif path.lower().endswith('.csv'):
             return pd.read_csv(path)
         else:
             raise Exception(f"Wrong spreadsheet format: {path}")
     
-    @staticmethod
-    def _load_climate_(path: str) -> Dict[str, Dict[str, pd.DataFrame]]:
+    def _load_climate_(
+            self,
+            path: str
+        ) -> Dict[str, Dict[str, MonthlyDataFrame]]:
         result = {}
         for file in listdir(path):
-            df = MonthlyDataFrame(pd.read_csv(f'{path}/{file}'))
+            df = self._load_dataframe_(f'{path}/{file}')
+            df = MonthlyDataFrame(df)
             result[file.split('.')[0]] = df
         return result
     
