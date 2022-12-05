@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 
 from app.isotope_data import IsotopeData
 from app.site_data import SiteData
+from app.utils.comparison_functions import compare_pearsonr
 from matplotlib.figure import Figure, Axes
 from os import listdir
-from scipy.stats import mannwhitneyu
 from typing import Dict, Optional, List, Tuple, Callable
+from zhutils.common import ComparisonFunction, Months
 from zhutils.dataframes import MonthlyDataFrame, SuperbDataFrame
 from zhutils.stats import dropna_mannwhitneyu
 
@@ -133,6 +134,79 @@ class TRSIsotopesAnalyser:
             df.drop(columns=['Year'])).\
             corr_and_p_values(highlight_from=0.01, corr_function=dropna_mannwhitneyu
         )
+    
+    def compare_with_climate(
+            self,
+            isotope: str,
+            climate_index: str,
+            compare_by: ComparisonFunction = compare_pearsonr,
+            sort_by: Callable[[IsotopeData], int] = None,
+            start_year: Optional[int] = None,
+            end_year: Optional[int] = None
+        ) -> pd.DataFrame:
+        """
+        Params:
+            isotope: isotope name (13C, 2H, 18O, etc.)
+            climate_index: climate index name (Temperature, Precipitation, VPD, etc.)
+            compare_by: comparison function (default: pearson correlation)
+            sort_by: sort function for isotopes (by lat \ lon, name etc.)
+            start_year: beginning of comparison period
+            end_year: ending of comparison period
+        Returns:
+            pd.Dataframe with columns:
+                Site Code: str
+                Month: str
+                Stat: float
+                P-value: float
+        """
+
+        isotopes = self.__get_isotopes_by_pattern__(isotope)
+        
+        if sort_by:
+            isotopes = sorted(isotopes, key=sort_by)
+        
+        dfs = []
+
+        for i in isotopes:
+            
+            i_data = i.data
+            clim_data = self.climate_data.get(i.site.station_name)
+
+            if clim_data is None:
+                continue
+
+            if climate_index not in clim_data.columns:
+                continue
+
+            if start_year and end_year:
+                i_data = i_data[
+                    (start_year <= i_data['Year']) & (i_data['Year'] <= end_year)
+                ]
+            
+            prev_year = clim_data.compare_with(
+                other=i_data,
+                using=compare_by,
+                clim_index=climate_index,
+                previous_year=True
+            )
+            curr_year = clim_data.compare_with(
+                other=i_data,
+                using=compare_by,
+                clim_index=climate_index,
+                previous_year=False
+            )
+
+            prev_year['Month'] = prev_year['Month'].apply(lambda x: f'{Months(x).name} prev')
+            curr_year['Month'] = curr_year['Month'].apply(lambda x: Months(x).name)
+
+            df = pd.concat([prev_year, curr_year])
+            df['Site Code'] = i.site.code
+            dfs.append(df)
+        
+        result = pd.concat(dfs).reset_index(drop=True)
+        result.insert(0, 'Site Code', result.pop('Site Code'))
+
+        return result
     
     def heatmap(self) -> Tuple[Figure, Axes]:
         # TODO
