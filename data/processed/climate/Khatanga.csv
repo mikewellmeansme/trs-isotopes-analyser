@@ -1,4 +1,4 @@
-Year,Month,Precipitation,RelativeHumiditi,SunshineDuration,Temperature,VPD
+Year,Month,Precipitation,Relative Humidity,Sunshine Humidity,Temperature,VPD
 1906,1,,,,-38.3,
 1906,2,,,,-33.0,
 1906,3,,,,-26.6,

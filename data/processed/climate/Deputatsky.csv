@@ -1,4 +1,4 @@
-Year,Month,Precipitation,RelativeHumiditi,SunshineDuration,Temperature,VPD
+Year,Month,Precipitation,Relative Humidity,Sunshine Duration,Temperature,VPD
 1960,1,0.0,,,,
 1960,2,2.1,,,-38.44,0.2
 1960,3,8.1,,,-29.480000000000008,0.5

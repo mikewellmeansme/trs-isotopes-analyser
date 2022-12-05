@@ -1,4 +1,4 @@
-Year,Month,Precipitation,RelativeHumiditi,SunshineDuration,Temperature,VPD
+Year,Month,Precipitation,Relative Humidity,Sunshine Duration,Temperature,VPD
 1933,1,,,,-26.0,0.7
 1933,2,,,,-24.4,0.7
 1933,3,,,,-15.7,1.5
