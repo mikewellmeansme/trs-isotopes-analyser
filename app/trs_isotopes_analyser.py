@@ -308,9 +308,10 @@ class TRSIsotopesAnalyser:
             row_colors=row_colors,
             linewidths=1,
             linecolor='gray',
-            cbar_pos=(0.12, .6, .05, .18),
+            cbar_pos=(0.12, .7, .05, .18),
             cbar_kws=dict(ticks=[-.6, -.3, 0, .3, .6]),
-            vmin=-0.7, vmax=0.7
+            vmin=-0.7, vmax=0.7,
+            dendrogram_ratio=(0.2, 0.05)
         )
         hm.ax_heatmap.set_title(climate_index, fontsize = 20)
         hm.ax_heatmap.set_xlabel('Month', fontsize = 16)
