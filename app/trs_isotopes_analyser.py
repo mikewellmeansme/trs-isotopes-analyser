@@ -80,7 +80,7 @@ class TRSIsotopesAnalyser:
             sort_by: Callable[[IsotopeData], int] = None,
             ylabel: Optional[str] = None,
             subplots_kws: Optional[Dict] = None,
-            region_to_color: Optional[Dict[str, str]] = None,
+            site_to_color: Optional[Dict[str, str]] = None,
         ) -> Tuple[Figure, Axes]:
 
         subplots_kws = subplots_kws or {}
@@ -91,16 +91,15 @@ class TRSIsotopesAnalyser:
         
         data = [list(i.data['Value'].dropna()) for i in isotopes]
         labels = [i.site.code for i in isotopes]
-        regions = [i.site.region for i in isotopes]
 
         fig, axes = plt.subplots(**subplots_kws)
         bp = axes.boxplot(
             data
         )
 
-        if region_to_color:
+        if site_to_color:
             
-            colors = [region_to_color[region] for region in regions]
+            colors = [site_to_color[code] for code in labels]
 
             for el in ['boxes']:
                 for patch, color in zip(bp[el], colors):
