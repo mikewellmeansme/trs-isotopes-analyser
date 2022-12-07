@@ -4,8 +4,8 @@ from typing import Dict, Optional
 @dataclass
 class SiteData:
     region: str
-    number: int
-    name: str
+    name: int
+    number: str
     code: str
     lat: float
     lon: float
