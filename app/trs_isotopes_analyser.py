@@ -8,7 +8,7 @@ from app.utils.comparison_functions import compare_pearsonr
 from matplotlib.figure import Figure, Axes
 from os import listdir
 from typing import Dict, Optional, List, Tuple, Callable
-from zhutils.common import ComparisonFunction, Months
+from zhutils.common import ComparisonFunction, OutputFunction, Months
 from zhutils.dataframes import MonthlyDataFrame, SuperbDataFrame
 from zhutils.stats import dropna_mannwhitneyu
 
@@ -114,7 +114,9 @@ class TRSIsotopesAnalyser:
     def mannwhitneyu(
             self,
             isotope: str,
-            sort_by: Callable[[IsotopeData], int] = None
+            output_function: OutputFunction,
+            highlight_from: Optional[float] = None,
+            sort_by: Callable[[IsotopeData], int] = None,
         ) -> pd.DataFrame:
 
         isotopes = self.__get_isotopes_by_pattern__(isotope)
@@ -131,9 +133,14 @@ class TRSIsotopesAnalyser:
         ).reset_index()
 
         return SuperbDataFrame(
-            df.drop(columns=['Year'])).\
-            corr_and_p_values(highlight_from=0.01, corr_function=dropna_mannwhitneyu
-        )
+                df.
+                drop(columns=['Year'])
+            ).\
+            corr_and_p_values(
+                highlight_from=highlight_from,
+                corr_function=dropna_mannwhitneyu,
+                output_function=output_function
+            )
     
     def compare_with_climate(
             self,
