@@ -142,6 +142,58 @@ class TRSIsotopesAnalyser:
                 output_function=output_function
             )
     
+    def mannwhitneyu_heatmap(
+            self,
+            isotope,
+            isotope_title: str,
+            sort_by: Callable[[IsotopeData], int] = None,
+            site_to_color: Optional[Dict[str, str]] = None,
+            clustermap_kwargs: Optional[Dict] = None
+        ) -> sns.matrix.ClusterGrid:
+
+        def print_p_values(r, p, *args, **kwargs):
+            return p
+        
+        df = self.mannwhitneyu(isotope, print_p_values, sort_by=sort_by)
+
+        clustermap_kwargs = {
+            'yticklabels': df.index,
+            'xticklabels': df.index,
+            'cmap': 'Greens_r',
+            'linewidths': 1,
+            'linecolor': 'gray',
+            'cbar_pos': (0.08, .7, .05, .18),
+            'dendrogram_ratio': (0.15, 0.05),
+            'vmin': 0.0, 'vmax': 0.01,
+            'col_cluster': False,
+            'row_cluster': False,
+        } or clustermap_kwargs
+
+        hm = sns.clustermap(
+            data=df.astype(float),
+            mask=df.astype(float) > 0.01,
+            **clustermap_kwargs
+        )
+
+        if site_to_color:
+            for yticklabel in hm.ax_heatmap.get_yticklabels():
+                yticklabel.set_color(site_to_color[yticklabel.get_text()])
+
+            for xticklabel in hm.ax_heatmap.get_xticklabels():
+                xticklabel.set_color(site_to_color[xticklabel.get_text()])
+
+        hm.ax_heatmap.set_title('Mann-Whitneyu for ' + isotope_title, fontsize=20)
+        hm.ax_heatmap.set_xlabel('Site code', fontsize=16)
+        hm.ax_heatmap.xaxis.set_tick_params(labelsize=16, rotation=45)
+        hm.ax_heatmap.yaxis.set_tick_params(labelsize=16, rotation=0)
+
+        hm.ax_heatmap.set_ylabel('Site code', fontsize=16)
+        hm.ax_cbar.set_ylabel('P-value')
+        hm.ax_cbar.yaxis.tick_left()
+        hm.ax_cbar.yaxis.set_label_position("left")
+
+        return hm
+    
     def compare_with_climate(
             self,
             isotope: str,
