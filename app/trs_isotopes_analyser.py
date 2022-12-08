@@ -7,8 +7,12 @@ from app.site_data import SiteData
 from app.utils.comparison_functions import compare_pearsonr
 from matplotlib.figure import Figure, Axes
 from os import listdir
+from scipy.stats import zscore
 from typing import Dict, Optional, List, Tuple, Callable
+
+from zhutils.approximators import Polynomial
 from zhutils.common import ComparisonFunction, OutputFunction, Months
+from zhutils.correlation import dropna_pearsonr
 from zhutils.dataframes import MonthlyDataFrame, SuperbDataFrame
 from zhutils.stats import dropna_mannwhitneyu
 
@@ -194,6 +198,92 @@ class TRSIsotopesAnalyser:
 
         return hm
     
+    def __get_isotope_by_site_code__(
+            self,
+            isotope: str,
+            site_code: str
+        ) -> Optional[IsotopeData]:
+        f = filter(
+            lambda x: x.site.code == site_code,
+            self.__get_isotopes_by_pattern__(isotope)
+        )
+        l = list(f)
+        if l:
+            return l[0]
+        else:
+            return None
+
+    @staticmethod
+    def get_trend(
+            x: List[float],
+            y: List[float],
+            deg: int = 6
+        ) -> List[float]:
+
+        p = Polynomial()
+        p.fit(x, y, deg=deg)
+        trend = p.predict(x)
+        return trend
+    
+    def get_trends_r2(
+            self,
+            isotope: str,
+            site_codes: List[str],
+            trend_deg: int = 6
+        ) -> Dict[str, Tuple[float, float]]:
+
+        isotopes = self.__get_isotopes_by_pattern__(isotope)
+        result = {}
+
+        for isot in isotopes:
+
+            if isot.site.code not in site_codes:
+                continue
+
+            years = isot.data['Year']
+            scaled_value = zscore(isot.data['Value'], nan_policy='omit')
+            trend = self.get_trend(years, scaled_value, trend_deg)
+            r, p = dropna_pearsonr(scaled_value, trend)
+            r2 = r ** 2
+            result[isot.site.code] = (r2, p)
+        
+        return result
+
+    def plot_trends(
+            self,
+            isotope: str,
+            isotope_title: str,
+            site_codes: List[str],
+            site_to_color: List[str],
+            trend_deg: int = 6
+        ) -> Tuple[Figure, Axes]:
+
+        isotopes = self.__get_isotopes_by_pattern__(isotope)
+
+        fig, ax = plt.subplots(1,1, figsize=(12, 5), dpi=400)
+
+        for isot in isotopes:
+
+            if isot.site.code not in site_codes:
+                continue
+
+            years = isot.data['Year']
+            scaled_value = zscore(isot.data['Value'], nan_policy='omit')
+            trend = self.get_trend(years, scaled_value, trend_deg)
+
+            ax.plot(years, scaled_value, '--', c=site_to_color[isot.site.code], lw=0.5)
+            
+            ax.plot(
+                years,
+                trend,
+                label=f'{isotope_title}_{isot.site.code}',
+                c=site_to_color[isot.site.code], lw=2
+            )
+        
+        ax.set_ylabel(f'Normalized {isotope_title} data')
+
+        return fig, ax
+
     def compare_with_climate(
             self,
             isotope: str,
