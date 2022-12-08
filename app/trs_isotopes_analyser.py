@@ -340,7 +340,8 @@ class TRSIsotopesAnalyser:
             sort_by: Callable[[IsotopeData], int] = None,
             start_year: Optional[int] = None,
             end_year: Optional[int] = None,
-            min_p_value: float = 0.05
+            min_p_value: float = 0.05,
+            clustermap_kwargs: Optional[Dict] = None
         ) -> sns.matrix.ClusterGrid:
 
         stats, mask = self._get_wide_comparison_(
@@ -356,20 +357,24 @@ class TRSIsotopesAnalyser:
 
         row_colors = [isotope_to_color[i.split('_')[0]] for i in stats.index]
 
+        clustermap_kwargs = {
+            'row_colors': row_colors,
+            'cmap': "seismic",
+            'col_cluster': False,
+            'row_cluster': False,
+            'linewidths': 1,
+            'linecolor': 'gray',
+            'cbar_pos': (0.12, .7, .05, .18),
+            'cbar_kws': dict(ticks=[-.6, -.3, 0, .3, .6]),
+            'vmin': -0.7, 'vmax': 0.7,
+            'dendrogram_ratio': (0.2, 0.05)
+        } or clustermap_kwargs
+
         hm = sns.clustermap(
             data=stats.fillna(0),
             mask=mask.fillna(1) > min_p_value,
-            cmap="seismic",
-            col_cluster=False,
-            row_cluster=False,
             yticklabels=stats.index,
-            row_colors=row_colors,
-            linewidths=1,
-            linecolor='gray',
-            cbar_pos=(0.12, .7, .05, .18),
-            cbar_kws=dict(ticks=[-.6, -.3, 0, .3, .6]),
-            vmin=-0.7, vmax=0.7,
-            dendrogram_ratio=(0.2, 0.05)
+            **clustermap_kwargs
         )
         hm.ax_heatmap.set_title(climate_index, fontsize = 20)
         hm.ax_heatmap.set_xlabel('Month', fontsize = 16)
