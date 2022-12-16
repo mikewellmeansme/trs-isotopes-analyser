@@ -249,41 +249,6 @@ class TRSIsotopesAnalyser:
         
         return result
 
-    def plot_trends(
-            self,
-            isotope: str,
-            isotope_title: str,
-            site_codes: List[str],
-            site_to_color: List[str],
-            trend_deg: int = 6
-        ) -> Tuple[Figure, Axes]:
-
-        isotopes = self.__get_isotopes_by_pattern__(isotope)
-
-        fig, ax = plt.subplots(1,1, figsize=(12, 5), dpi=400)
-
-        for isot in isotopes:
-
-            if isot.site.code not in site_codes:
-                continue
-
-            years = isot.data['Year']
-            scaled_value = zscore(isot.data['Value'], nan_policy='omit')
-            trend = self.get_trend(years, scaled_value, trend_deg)
-
-            ax.plot(years, scaled_value, '--', c=site_to_color[isot.site.code], lw=0.5)
-            
-            ax.plot(
-                years,
-                trend,
-                label=f'{isotope_title}_{isot.site.code}',
-                c=site_to_color[isot.site.code], lw=2
-            )
-        
-        ax.set_ylabel(f'Normalized {isotope_title} data')
-
-        return fig, ax
-
     def compare_with_climate(
             self,
             isotope: str,
