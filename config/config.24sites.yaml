@@ -6,7 +6,7 @@ plot_font:
   size: "16"
   family: "Times New Roman"
 
-save_path: ../results/Paper_003
+save_path: "../results/Paper_003"
 
 site_to_order:
   ALA: 1
@@ -88,9 +88,33 @@ sites_trends:
   - TAY
   - IND
 
+clim_indexes:
+  - "Temperature"
+  - "Precipitation"
+  - "VPD"
+  - "Relative Humidity"
+  - "Sunshine Duration"
+
 clim_index_to_name:
-  Temp: Temperature
-  Prec: Precipitation
-  SD: SunshineDuration
-  VPD: VPD
-  RH: RelativeHumiditi
+  Temp: "Temperature"
+  Prec: "Precipitation"
+  SD: "Sunshine Duration"
+  VPD: "VPD"
+  RH: "Relative Humidity"
+
+zscore_trends_kwargs:
+  xlim: 
+    - 1900
+    - 2000
+  ylim:
+    - -2.5
+    - 2.5
+  yticks:
+    - -1.5
+    - 0.0
+    - 1.5
+
+heatmap_kwargs:
+  start_year: 1960
+  end_year: 2000
+  min_p_value: 0.05
