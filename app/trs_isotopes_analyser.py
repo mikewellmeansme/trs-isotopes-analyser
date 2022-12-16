@@ -2,13 +2,15 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from app.isotope_data import IsotopeData
-from app.site_data import SiteData
-from app.utils.comparison_functions import compare_pearsonr
 from matplotlib.figure import Figure, Axes
 from os import listdir
 from scipy.stats import zscore
 from typing import Dict, Optional, List, Tuple, Callable
+
+from app.isotope_data import IsotopeData
+from app.site_data import SiteData
+from app.utils.comparison_functions import compare_pearsonr
+from app.utils.plots import print_p_classic
 
 from zhutils.approximators import Polynomial
 from zhutils.common import ComparisonFunction, OutputFunction, Months
@@ -248,6 +250,86 @@ class TRSIsotopesAnalyser:
             result[isot.site.code] = (r2, p)
         
         return result
+    
+    def plot_zscore_trends(
+        self,
+        isotope: str,
+        isotope_title: str,
+        site_codes: List[str],
+        *,
+        trend_deg: int = 6,
+        print_p: Callable[[float], str] = print_p_classic,
+        xlim: Optional[List[int]] = None,
+        ylim: Optional[List[float]] = None,
+        yticks: Optional[List[float]] = None
+    ) -> Tuple[Figure, Axes]:
+        """
+        Plots polynomial fit trend for zscored isotope data in multiple subplots
+
+        Params:
+            isotope: isotope name (13C, 2H, 18O, etc.)
+            isotope_title: isotope title to print ('$δ^{2}$H', '$δ^{13}$C', '$δ^{18}$O', etc) 
+            site_codes: List of site codes to plot isotope data from
+        Keyword-Only params:
+            trend_deg: Degree of polynomial fit trend
+            print_p: Function for printing p-value in legend
+            xlim: xlim for matplotlib Axes
+            ylim: ylim for matplotlib Axes
+            yticks: yticks for matplotlib Axes
+        """
+
+        isotopes = [self.__get_isotope_by_site_code__(isotope, site_code) for site_code in site_codes]
+        n = len(site_codes)
+        
+        fig, axes = plt.subplots(n, 1, figsize=(12, 1.5*n), dpi=400, sharex=True)
+        plt.subplots_adjust(hspace=0.00)
+
+        axes[0].set_title(f'Normalised {isotope_title} trc')
+        axes[n-1].set_xlabel('Year')
+
+        trends_r2 = self.get_trends_r2(isotope, site_codes, trend_deg)
+
+        for i, isot in enumerate(isotopes):
+
+            years = isot.data['Year']
+            scaled_value = zscore(isot.data['Value'], nan_policy='omit')
+            trend = self.get_trend(years, scaled_value, trend_deg)
+
+            r2, p = trends_r2[isot.site.code]
+            p_str = print_p(p)
+
+            for j in range(n):
+                axes[j].plot(
+                    years,
+                    scaled_value,
+                    '--',
+                    c='lightgray' if i!=j else 'blue',
+                    lw=0.5,
+                    zorder=1 if i!=j else 2
+                )
+                
+                axes[j].plot(
+                    years,
+                    trend,
+                    label=f'$R^2={r2:.2f}$, ${p_str}$' if i == j else None,
+                    c='lightgray' if i!=j else 'blue',
+                    lw=2,
+                    zorder=1 if i!=j else 2
+                )
+            
+            axes[i].set_ylabel(f'{isot.site.code}')
+
+            if xlim:
+                axes[i].set_xlim(xlim)
+            if ylim:
+                axes[i].set_ylim(ylim)
+            if yticks:
+                axes[i].set_yticks(yticks)
+            
+            leg = axes[i].legend(handlelength=0, fontsize=13, frameon=True, loc=9, framealpha=0.5)
+            leg.get_frame().set_linewidth(0.0)
+
+        return fig, axes
 
     def compare_with_climate(
             self,

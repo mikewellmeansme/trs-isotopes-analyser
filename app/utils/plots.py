@@ -1,5 +1,6 @@
 import random
 from math import ceil
+from zhutils.math import fexp
 
 month_names = ['September', 'October', 'November', 'December', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August']
 m_names = ['S', 'O', 'N', 'D', 'J', 'F', 'M', 'A', 'M ', 'J', 'J', 'A']
@@ -63,3 +64,19 @@ def interpotate_between_colors(colors: list, points: int):
             color_number += 1 
 
     return result
+
+
+def print_p_exponent(p: float) -> str:
+    p_exp = fexp(p)
+    return f'p<10^{{{p_exp+1}}}'
+
+
+def print_p_classic(p: float) -> str:
+    if p < 0.001:
+        return 'p<0.001'
+    elif p < 0.01:
+        return 'p<0.01'
+    elif p < 0.05:
+        return 'p<0.05'
+    else:
+        return f'{p:.2f}'
