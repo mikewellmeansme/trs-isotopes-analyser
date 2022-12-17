@@ -8,9 +8,17 @@ Current features:
 
 * Trending monthly climate data
 
-* Supplementing monthly climate data with grid data
+* Trending tree-ring stable isotopes normalised data
 
-* Visualisation of obtained results
+* Boxplots and pairwise Mann-Whitneyu tests between tree-ring stable isotopes data
+
+To simply get all plots and tables for the given configs use:
+
+    python -m run config/config.24sites.yaml save-all
+
+To see all options use:
+
+    python -m run --help
 
 Input data available in folder `data`.
 
