@@ -1,12 +1,12 @@
-sites_path: "../data/processed/Sites.csv"
-isotopes_path: "../data/processed/isotopes/isotopes_data.csv"
-climate_path: "../data/processed/climate"
+sites_path: "data/processed/Sites.csv"
+isotopes_path: "data/processed/isotopes/isotopes_data.csv"
+climate_path: "data/processed/climate"
 
 plot_font:
   size: "16"
   family: "Times New Roman"
 
-save_path: "../results/Paper_003"
+save_path: "results/Paper_003"
 
 site_to_order:
   ALA: 1
