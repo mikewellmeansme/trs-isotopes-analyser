@@ -2,13 +2,19 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+from matplotlib.figure import Figure, Axes
+from os import listdir
+from scipy.stats import zscore
+from typing import Dict, Optional, List, Tuple, Callable
+
 from app.isotope_data import IsotopeData
 from app.site_data import SiteData
 from app.utils.comparison_functions import compare_pearsonr
-from matplotlib.figure import Figure, Axes
-from os import listdir
-from typing import Dict, Optional, List, Tuple, Callable
-from zhutils.common import ComparisonFunction, Months
+from app.utils.plots import print_p_classic
+
+from zhutils.approximators import Polynomial
+from zhutils.common import ComparisonFunction, OutputFunction, Months
+from zhutils.correlation import dropna_pearsonr
 from zhutils.dataframes import MonthlyDataFrame, SuperbDataFrame
 from zhutils.stats import dropna_mannwhitneyu
 
@@ -80,7 +86,7 @@ class TRSIsotopesAnalyser:
             sort_by: Callable[[IsotopeData], int] = None,
             ylabel: Optional[str] = None,
             subplots_kws: Optional[Dict] = None,
-            region_to_color: Optional[Dict[str, str]] = None,
+            site_to_color: Optional[Dict[str, str]] = None,
         ) -> Tuple[Figure, Axes]:
 
         subplots_kws = subplots_kws or {}
@@ -91,16 +97,15 @@ class TRSIsotopesAnalyser:
         
         data = [list(i.data['Value'].dropna()) for i in isotopes]
         labels = [i.site.code for i in isotopes]
-        regions = [i.site.region for i in isotopes]
 
         fig, axes = plt.subplots(**subplots_kws)
         bp = axes.boxplot(
             data
         )
 
-        if region_to_color:
+        if site_to_color:
             
-            colors = [region_to_color[region] for region in regions]
+            colors = [site_to_color[code] for code in labels]
 
             for el in ['boxes']:
                 for patch, color in zip(bp[el], colors):
@@ -115,7 +120,9 @@ class TRSIsotopesAnalyser:
     def mannwhitneyu(
             self,
             isotope: str,
-            sort_by: Callable[[IsotopeData], int] = None
+            output_function: OutputFunction,
+            highlight_from: Optional[float] = None,
+            sort_by: Callable[[IsotopeData], int] = None,
         ) -> pd.DataFrame:
 
         isotopes = self.__get_isotopes_by_pattern__(isotope)
@@ -132,10 +139,198 @@ class TRSIsotopesAnalyser:
         ).reset_index()
 
         return SuperbDataFrame(
-            df.drop(columns=['Year'])).\
-            corr_and_p_values(highlight_from=0.01, corr_function=dropna_mannwhitneyu
-        )
+                df.
+                drop(columns=['Year'])
+            ).\
+            corr_and_p_values(
+                highlight_from=highlight_from,
+                corr_function=dropna_mannwhitneyu,
+                output_function=output_function
+            )
     
+    def mannwhitneyu_heatmap(
+            self,
+            isotope,
+            isotope_title: str,
+            sort_by: Callable[[IsotopeData], int] = None,
+            site_to_color: Optional[Dict[str, str]] = None,
+            clustermap_kwargs: Optional[Dict] = None
+        ) -> sns.matrix.ClusterGrid:
+
+        def print_p_values(r, p, *args, **kwargs):
+            return p
+        
+        df = self.mannwhitneyu(isotope, print_p_values, sort_by=sort_by)
+
+        clustermap_kwargs = {
+            'yticklabels': df.index,
+            'xticklabels': df.index,
+            'cmap': 'Greens_r',
+            'linewidths': 1,
+            'linecolor': 'gray',
+            'cbar_pos': (0.08, .7, .05, .18),
+            'dendrogram_ratio': (0.15, 0.05),
+            'vmin': 0.0, 'vmax': 0.01,
+            'col_cluster': False,
+            'row_cluster': False,
+        } or clustermap_kwargs
+
+        hm = sns.clustermap(
+            data=df.astype(float),
+            mask=df.astype(float) > 0.01,
+            **clustermap_kwargs
+        )
+
+        if site_to_color:
+            for yticklabel in hm.ax_heatmap.get_yticklabels():
+                yticklabel.set_color(site_to_color[yticklabel.get_text()])
+
+            for xticklabel in hm.ax_heatmap.get_xticklabels():
+                xticklabel.set_color(site_to_color[xticklabel.get_text()])
+
+        hm.ax_heatmap.set_title('Mann-Whitneyu for ' + isotope_title, fontsize=20)
+        hm.ax_heatmap.set_xlabel('Site code', fontsize=16)
+        hm.ax_heatmap.xaxis.set_tick_params(labelsize=16, rotation=45)
+        hm.ax_heatmap.yaxis.set_tick_params(labelsize=16, rotation=0)
+
+        hm.ax_heatmap.set_ylabel('Site code', fontsize=16)
+        hm.ax_cbar.set_ylabel('P-value')
+        hm.ax_cbar.yaxis.tick_left()
+        hm.ax_cbar.yaxis.set_label_position("left")
+
+        return hm
+    
+    def __get_isotope_by_site_code__(
+            self,
+            isotope: str,
+            site_code: str
+        ) -> Optional[IsotopeData]:
+        f = filter(
+            lambda x: x.site.code == site_code,
+            self.__get_isotopes_by_pattern__(isotope)
+        )
+        l = list(f)
+        if l:
+            return l[0]
+        else:
+            return None
+
+    @staticmethod
+    def get_trend(
+            x: List[float],
+            y: List[float],
+            deg: int = 6
+        ) -> List[float]:
+
+        p = Polynomial()
+        p.fit(x, y, deg=deg)
+        trend = p.predict(x)
+        return trend
+    
+    def get_trends_r2(
+            self,
+            isotope: str,
+            site_codes: List[str],
+            trend_deg: int = 6
+        ) -> Dict[str, Tuple[float, float]]:
+
+        isotopes = self.__get_isotopes_by_pattern__(isotope)
+        result = {}
+
+        for isot in isotopes:
+
+            if isot.site.code not in site_codes:
+                continue
+
+            years = isot.data['Year']
+            scaled_value = zscore(isot.data['Value'], nan_policy='omit')
+            trend = self.get_trend(years, scaled_value, trend_deg)
+            r, p = dropna_pearsonr(scaled_value, trend)
+            r2 = r ** 2
+            result[isot.site.code] = (r2, p)
+        
+        return result
+    
+    def plot_zscore_trends(
+        self,
+        isotope: str,
+        isotope_title: str,
+        site_codes: List[str],
+        *,
+        trend_deg: int = 6,
+        print_p: Callable[[float], str] = print_p_classic,
+        xlim: Optional[List[int]] = None,
+        ylim: Optional[List[float]] = None,
+        yticks: Optional[List[float]] = None
+    ) -> Tuple[Figure, Axes]:
+        """
+        Plots polynomial fit trend for zscored isotope data in multiple subplots
+
+        Params:
+            isotope: isotope name (13C, 2H, 18O, etc.)
+            isotope_title: isotope title to print ('$δ^{2}$H', '$δ^{13}$C', '$δ^{18}$O', etc) 
+            site_codes: List of site codes to plot isotope data from
+        Keyword-Only params:
+            trend_deg: Degree of polynomial fit trend
+            print_p: Function for printing p-value in legend
+            xlim: xlim for matplotlib Axes
+            ylim: ylim for matplotlib Axes
+            yticks: yticks for matplotlib Axes
+        """
+
+        isotopes = [self.__get_isotope_by_site_code__(isotope, site_code) for site_code in site_codes]
+        n = len(site_codes)
+        
+        fig, axes = plt.subplots(n, 1, figsize=(12, 1.5*n), dpi=400, sharex=True)
+        plt.subplots_adjust(hspace=0.00)
+
+        axes[0].set_title(f'Normalised {isotope_title} trc')
+        axes[n-1].set_xlabel('Year')
+
+        trends_r2 = self.get_trends_r2(isotope, site_codes, trend_deg)
+
+        for i, isot in enumerate(isotopes):
+
+            years = isot.data['Year']
+            scaled_value = zscore(isot.data['Value'], nan_policy='omit')
+            trend = self.get_trend(years, scaled_value, trend_deg)
+
+            r2, p = trends_r2[isot.site.code]
+            p_str = print_p(p)
+
+            for j in range(n):
+                axes[j].plot(
+                    years,
+                    scaled_value,
+                    '--',
+                    c='lightgray' if i!=j else 'blue',
+                    lw=0.5,
+                    zorder=1 if i!=j else 2
+                )
+                
+                axes[j].plot(
+                    years,
+                    trend,
+                    label=f'$R^2={r2:.2f}$, ${p_str}$' if i == j else None,
+                    c='lightgray' if i!=j else 'blue',
+                    lw=2,
+                    zorder=1 if i!=j else 2
+                )
+            
+            axes[i].set_ylabel(f'{isot.site.code}')
+
+            if xlim:
+                axes[i].set_xlim(xlim)
+            if ylim:
+                axes[i].set_ylim(ylim)
+            if yticks:
+                axes[i].set_yticks(yticks)
+            
+            leg = axes[i].legend(handlelength=0, fontsize=13, frameon=True, loc=9, framealpha=0.5)
+            leg.get_frame().set_linewidth(0.0)
+
+        return fig, axes
+
     def compare_with_climate(
             self,
             isotope: str,
@@ -282,7 +477,8 @@ class TRSIsotopesAnalyser:
             sort_by: Callable[[IsotopeData], int] = None,
             start_year: Optional[int] = None,
             end_year: Optional[int] = None,
-            min_p_value: float = 0.05
+            min_p_value: float = 0.05,
+            clustermap_kwargs: Optional[Dict] = None
         ) -> sns.matrix.ClusterGrid:
 
         stats, mask = self._get_wide_comparison_(
@@ -298,20 +494,24 @@ class TRSIsotopesAnalyser:
 
         row_colors = [isotope_to_color[i.split('_')[0]] for i in stats.index]
 
+        clustermap_kwargs = {
+            'row_colors': row_colors,
+            'cmap': "seismic",
+            'col_cluster': False,
+            'row_cluster': False,
+            'linewidths': 1,
+            'linecolor': 'gray',
+            'cbar_pos': (0.12, .7, .05, .18),
+            'cbar_kws': dict(ticks=[-.6, -.3, 0, .3, .6]),
+            'vmin': -0.7, 'vmax': 0.7,
+            'dendrogram_ratio': (0.2, 0.05)
+        } or clustermap_kwargs
+
         hm = sns.clustermap(
             data=stats.fillna(0),
             mask=mask.fillna(1) > min_p_value,
-            cmap="seismic",
-            col_cluster=False,
-            row_cluster=False,
             yticklabels=stats.index,
-            row_colors=row_colors,
-            linewidths=1,
-            linecolor='gray',
-            cbar_pos=(0.12, .7, .05, .18),
-            cbar_kws=dict(ticks=[-.6, -.3, 0, .3, .6]),
-            vmin=-0.7, vmax=0.7,
-            dendrogram_ratio=(0.2, 0.05)
+            **clustermap_kwargs
         )
         hm.ax_heatmap.set_title(climate_index, fontsize = 20)
         hm.ax_heatmap.set_xlabel('Month', fontsize = 16)
