@@ -95,6 +95,95 @@ def update_sites_map(site_code, map_fig):
 
     return map_fig
 
+
+# TODO: Добавить выбор месяца (возможно через таблицу)
+@callback(
+    Output('simple-graph', 'figure'),
+    [
+        Input('site-selection', 'value'),
+        Input('isotope-selection', 'value'),
+        Input('climate-index-selection', 'value'),
+    ]
+)
+def update_simple_graph(site_code, isotope, clim_index):
+
+    if not site_code:
+        return {}
+    
+    if not isotope:
+        return {}
+    
+    isotope_data = ia.__get_isotope_by_site_code__(isotope, site_code).data
+
+    site = ia.__get_sites_by_pattern__({'code': site_code})[0]
+
+    climate_data = ia.climate_data.get(site.station_name)
+    climate_data = climate_data[climate_data['Month']==1]
+
+    if not clim_index or climate_data is None or clim_index not in climate_data.columns:
+        return {
+            'data': [
+                    {'x': isotope_data['Year'], 'y': isotope_data['Value'], 'name': f'{isotope} {site_code}'},
+                ],
+                'layout': {
+                    'title': f'{isotope} {site_code} plot',
+                    'xaxis': {'title' :'Year'},
+                    'yaxis': {'title': isotope},
+                }
+        }
+
+
+    return  {
+                'data': [
+                    {'x': isotope_data['Year'], 'y': isotope_data['Value'], 'name': f'{isotope} {site_code}'},
+                    {'x': climate_data['Year'], 'y': climate_data[clim_index], 'name': clim_index, 'yaxis': 'y2'},
+                ],
+                'layout': {
+                    'title': f'{isotope} {site_code} and {clim_index} plot',
+                    'xaxis': {'title' :'Year'},
+                    'yaxis': {'title': isotope},
+                    'yaxis2': {'title': clim_index, 'overlaying':'y', 'side': 'right', 'showgrid': False, 'showline': True,}
+                }
+            }
+
+
+"""@callback(
+    Output('scatter-graph', 'figure'),
+    [
+        Input('site-selection', 'value'),
+        Input('isotope-selection', 'value'),
+        Input('climate-index-selection', 'value'),
+    ]
+)
+def update_scatter_graph(active_cell):
+
+    if not active_cell:
+        return dict()
+    
+    if active_cell['column_id'] in ['Observation', 'Char']:
+        return dict()
+    
+    res, obs, clim = get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH)
+    _, p = get_polynomial_fit(res[clim], res[obs])
+    eq = get_equation(res[clim], res[obs])
+
+    annotation_x = res[clim].max() - (res[clim].max() - res[clim].min())/2
+    annotation_y = res[obs].max()
+
+    return  {
+                'data': [
+                    {'x': res[clim], 'y': res[obs], 'type' :'scatter', 'mode':'markers', 'marker': {'color': 'grey', 'size':9}, 'text': res['Year'], 'name': 'Scatterplot'},
+                    {'x': res[clim], 'y': p(res[clim]), 'line': {'color':'black','width': 2}, 'name': 'LS fit'},
+                ],
+                'layout': {
+                    'title': f'{obs} {clim} trend',
+                    'xaxis': {'title' : clim},
+                    'yaxis': {'title' : obs},
+                    'showlegend': False,
+                    'annotations': [{'x': annotation_x, 'y':annotation_y, 'text':eq, 'showarrow': False, 'font': {'size': 16}}]
+                }
+            }"""
+
 map = px.scatter_mapbox(pd.read_csv(config['sites_path']),
         lat="Latitude (degrees N)", lon="Longitude (degrees E)",
         hover_name="Site name", hover_data=["Site code", "Elevation"],
