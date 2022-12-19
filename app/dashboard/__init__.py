@@ -18,7 +18,9 @@ from dash import (
 )
 from app.trs_isotopes_analyser import TRSIsotopesAnalyser
 from app.config import load_config
-import pandas as pd 
+import pandas as pd
+import plotly.express as px
+
 
 dashboard = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -29,7 +31,6 @@ ia = TRSIsotopesAnalyser(
     config['climate_path']
 )
 
-# TODO: Центрирование карты на выбранной станции
 # TODO: График коэффициентов корреляции по месяцам
 # TODO: Добавить возможность отображения на карте станций ВМО и подсветка тех станций данные по которым использовались.
 
@@ -72,7 +73,40 @@ def update_climate_index_selection(site_code):
     wmo = "" if pd.isna(site.station_wmo_code) else f" (WMO: {site.station_wmo_code})"
 
     return result, f'Climate station: {site.station_name}{wmo}'
+
+
+
+@callback(
+    Output('sites-map', 'figure'),
+    [
+        Input('site-selection', 'value'),
+        Input('sites-map', 'figure')
+    ]
+)
+def update_sites_map(site_code, map_fig):
+
+    if not site_code:
+        return map_fig
     
+    site = ia.__get_sites_by_pattern__({'code': site_code})[0]
+
+    map_fig['layout']['mapbox']['center']['lat'] = site.lat
+    map_fig['layout']['mapbox']['center']['lon'] = site.lon
+
+    return map_fig
+
+map = px.scatter_mapbox(pd.read_csv(config['sites_path']),
+        lat="Latitude (degrees N)", lon="Longitude (degrees E)",
+        hover_name="Site name", hover_data=["Site code", "Elevation"],
+        zoom=3, height=600, width=1400
+    )
+map.update_layout(
+    title='Sites map',
+    mapbox_style='open-street-map',
+    autosize=True,
+    hovermode='closest'
+)
+
 
 dashboard.layout = html.Div(children=[
     dbc.Container([
@@ -108,7 +142,7 @@ dashboard.layout = html.Div(children=[
         ),
 
         dbc.Label('Click a cell in the table:', id="label-demo" ),
-        dcc.Graph(id='sites-map'),
+        dcc.Graph(id='sites-map', figure=map),
         dash_table.DataTable(
             #dendroclim_df.to_dict('records'),
             id='dendroclim',
@@ -141,6 +175,5 @@ dashboard.layout = html.Div(children=[
                     ), width=6)
                 ]
         )
-        #dash_table.DataTable(id='soure_table'),
     ])
 ])

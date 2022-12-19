@@ -5,22 +5,10 @@ from dash import (
     Output,
     callback
 )
-from app.climate.data_preprocessing import load_data
+
 from app.utils.functions import dropna_pearsonr, get_polynomial_fit, get_equation
 from app.dashboard.dash_utils import get_coh_and_clim, get_highlight_conditions
 
-
-climate_data = load_data('../input/climate/real',)
-dendroclim_df = pd.read_excel('../output/dendroclim_COH_corr_FOR_WEB.xlsx')
-df_COH = pd.read_excel('../input/COH/COH_allsites.xlsx')
-sites = pd.read_csv('../input/Sites.csv')
-
-
-"""@callback(Output('soure_table', 'data'), Input('dendroclim', 'active_cell'))
-def update_table(active_cell):
-    result, _, _ = get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH)
-    result = result.to_dict('records')
-    return result if result else {'None':'None'}"""
 
 
 @callback(Output('tbl_out', 'children'), Input('dendroclim', 'active_cell'))
@@ -92,19 +80,3 @@ def update_scatter_graph(active_cell):
                     'annotations': [{'x': annotation_x, 'y':annotation_y, 'text':eq, 'showarrow': False, 'font': {'size': 16}}]
                 }
             }
-
-
-@callback(Output('sites-map', 'figure'), Input('dendroclim', 'active_cell'))
-def update_sites_map(active_cell):
-
-    if not active_cell:
-        return dict()
-    
-    active_cell['row']
-    
-    fig = px.scatter_mapbox(sites, lat="Latitude (degrees N)", lon="Longitude (degrees E)",
-                            hover_name="Site name", hover_data=["Site code", "Elevation"],
-                            zoom=3, height=800, width=1000)
-    fig.update_layout(title='Sites map', mapbox_style='open-street-map')
-
-    return fig
