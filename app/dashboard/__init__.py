@@ -20,6 +20,7 @@ from app.trs_isotopes_analyser import TRSIsotopesAnalyser
 from app.config import load_config
 import pandas as pd
 import plotly.express as px
+from zhutils.approximators.polynomial import Polynomial
 
 
 dashboard = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -31,7 +32,6 @@ ia = TRSIsotopesAnalyser(
     config['climate_path']
 )
 
-# TODO: График коэффициентов корреляции по месяцам
 # TODO: Добавить возможность отображения на карте станций ВМО и подсветка тех станций данные по которым использовались.
 
 @callback(
@@ -75,7 +75,6 @@ def update_climate_index_selection(site_code):
     return result, f'Climate station: {site.station_name}{wmo}'
 
 
-
 @callback(
     Output('sites-map', 'figure'),
     [
@@ -97,28 +96,29 @@ def update_sites_map(site_code, map_fig):
 
 
 # TODO: Добавить выбор месяца (возможно через таблицу)
+# TODO: починить латех в уравнении
 @callback(
     Output('simple-graph', 'figure'),
+    Output('scatter-graph', 'figure'),
     [
         Input('site-selection', 'value'),
         Input('isotope-selection', 'value'),
         Input('climate-index-selection', 'value'),
     ]
 )
-def update_simple_graph(site_code, isotope, clim_index):
+def update_graphs(site_code, isotope, clim_index):
 
     if not site_code:
-        return {}
+        return {}, {}
     
     if not isotope:
-        return {}
+        return {}, {}
     
     isotope_data = ia.__get_isotope_by_site_code__(isotope, site_code).data
 
     site = ia.__get_sites_by_pattern__({'code': site_code})[0]
 
     climate_data = ia.climate_data.get(site.station_name)
-    climate_data = climate_data[climate_data['Month']==1]
 
     if not clim_index or climate_data is None or clim_index not in climate_data.columns:
         return {
@@ -130,8 +130,14 @@ def update_simple_graph(site_code, isotope, clim_index):
                     'xaxis': {'title' :'Year'},
                     'yaxis': {'title': isotope},
                 }
-        }
+        }, {}
 
+    climate_data = climate_data[climate_data['Month'] == 1]
+    data = pd.merge(isotope_data, climate_data, on='Year', how='inner')
+    p = Polynomial()
+    p.fit(data[clim_index], data['Value'], deg=1)
+    annotation_x = data[clim_index].max() - (data[clim_index].max() - data[clim_index].min())/2
+    annotation_y = data['Value'].max()
 
     return  {
                 'data': [
@@ -144,54 +150,33 @@ def update_simple_graph(site_code, isotope, clim_index):
                     'yaxis': {'title': isotope},
                     'yaxis2': {'title': clim_index, 'overlaying':'y', 'side': 'right', 'showgrid': False, 'showline': True,}
                 }
+            }, {
+                'data': [
+                    {'x': data[clim_index], 'y': data['Value'], 'type' :'scatter', 'mode':'markers', 'marker': {'color': 'grey', 'size':9}, 'text': data['Year'], 'name': 'Scatterplot'},
+                    {'x': data[clim_index], 'y': p.predict(data[clim_index]), 'line': {'color':'black','width': 2}, 'name': 'LS fit'},
+                ],
+                'layout': {
+                    'title': f'{isotope} {site_code} and {clim_index} trend',
+                    'xaxis': {'title' : clim_index},
+                    'yaxis': {'title' : isotope},
+                    'showlegend': False,
+                    'annotations': [{'x': annotation_x, 'y':annotation_y, 'text':p.get_equation(), 'showarrow': False, 'font': {'size': 16}}]
+                }
             }
 
 
-"""@callback(
-    Output('scatter-graph', 'figure'),
-    [
-        Input('site-selection', 'value'),
-        Input('isotope-selection', 'value'),
-        Input('climate-index-selection', 'value'),
-    ]
-)
-def update_scatter_graph(active_cell):
-
-    if not active_cell:
-        return dict()
-    
-    if active_cell['column_id'] in ['Observation', 'Char']:
-        return dict()
-    
-    res, obs, clim = get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH)
-    _, p = get_polynomial_fit(res[clim], res[obs])
-    eq = get_equation(res[clim], res[obs])
-
-    annotation_x = res[clim].max() - (res[clim].max() - res[clim].min())/2
-    annotation_y = res[obs].max()
-
-    return  {
-                'data': [
-                    {'x': res[clim], 'y': res[obs], 'type' :'scatter', 'mode':'markers', 'marker': {'color': 'grey', 'size':9}, 'text': res['Year'], 'name': 'Scatterplot'},
-                    {'x': res[clim], 'y': p(res[clim]), 'line': {'color':'black','width': 2}, 'name': 'LS fit'},
-                ],
-                'layout': {
-                    'title': f'{obs} {clim} trend',
-                    'xaxis': {'title' : clim},
-                    'yaxis': {'title' : obs},
-                    'showlegend': False,
-                    'annotations': [{'x': annotation_x, 'y':annotation_y, 'text':eq, 'showarrow': False, 'font': {'size': 16}}]
-                }
-            }"""
-
-map = px.scatter_mapbox(pd.read_csv(config['sites_path']),
+sites = pd.read_csv(config['sites_path'])
+sites['size'] = 1
+map = px.scatter_mapbox(
+        sites,
         lat="Latitude (degrees N)", lon="Longitude (degrees E)",
         hover_name="Site name", hover_data=["Site code", "Elevation"],
-        zoom=3, height=600, width=1400
+        zoom=3, height=600, width=1400,
+        size="size", size_max=20,
     )
 map.update_layout(
     title='Sites map',
-    mapbox_style='open-street-map',
+    mapbox_style='carto-positron',
     autosize=True,
     hovermode='closest'
 )
@@ -214,7 +199,8 @@ dashboard.layout = html.Div(children=[
                     dcc.Dropdown(
                         id="isotope-selection",
                         placeholder='First select site code',
-                        options = []
+                        options = [],
+                        searchable=False
                     ),
                     width="4"
                 ),
@@ -222,7 +208,8 @@ dashboard.layout = html.Div(children=[
                     dcc.Dropdown(
                         id="climate-index-selection",
                         placeholder='First select site code',
-                        options=[]
+                        options=[],
+                        searchable=False
                     ),
                     width="4"
                 )
@@ -232,6 +219,7 @@ dashboard.layout = html.Div(children=[
 
         dbc.Label('Click a cell in the table:', id="label-demo" ),
         dcc.Graph(id='sites-map', figure=map),
+        # TODO: Вернуть таблицу с помесячной корреляцией
         dash_table.DataTable(
             #dendroclim_df.to_dict('records'),
             id='dendroclim',
