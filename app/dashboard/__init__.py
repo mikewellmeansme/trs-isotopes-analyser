@@ -8,8 +8,8 @@ from dash import (
     dcc,
     html
 )
-#from utils.functions import  flatten
-#from app.dashboard.dash_utils import get_highlight_conditions
+from app.utils.functions import  flatten
+from app.dashboard.dash_utils import get_highlight_conditions
 #from app.dashboard.callbacks import *
 from dash import (
     Input,
@@ -72,7 +72,9 @@ def update_climate_index_selection(site_code):
 
     wmo = "" if pd.isna(site.station_wmo_code) else f" (WMO: {site.station_wmo_code})"
 
-    return result, f'Climate station: {site.station_name}{wmo}'
+    start_year, end_year = min(clim_data['Year']), max(clim_data['Year'])
+
+    return result, f'Climate station: {site.station_name}{wmo} ({start_year}-{end_year})'
 
 
 @callback(
@@ -97,9 +99,11 @@ def update_sites_map(site_code, map_fig):
 
 # TODO: Добавить выбор месяца (возможно через таблицу)
 # TODO: починить латех в уравнении
+# TODO: Добавить выбор start_year и end_year, слайдером (по-умолчанию ставить то, что в конфиге)
 @callback(
     Output('simple-graph', 'figure'),
     Output('scatter-graph', 'figure'),
+    Output('climate-corr-table', 'data'),
     [
         Input('site-selection', 'value'),
         Input('isotope-selection', 'value'),
@@ -109,12 +113,17 @@ def update_sites_map(site_code, map_fig):
 def update_graphs(site_code, isotope, clim_index):
 
     if not site_code:
-        return {}, {}
+        return {}, {}, []
     
     if not isotope:
-        return {}, {}
+        return {}, {}, []
     
-    isotope_data = ia.__get_isotope_by_site_code__(isotope, site_code).data
+    isotope_data = ia.__get_isotope_by_site_code__(isotope, site_code)
+    
+    if not isotope_data:
+        return {}, {}, []
+    
+    isotope_data = isotope_data.data
 
     site = ia.__get_sites_by_pattern__({'code': site_code})[0]
 
@@ -130,8 +139,20 @@ def update_graphs(site_code, isotope, clim_index):
                     'xaxis': {'title' :'Year'},
                     'yaxis': {'title': isotope},
                 }
-        }, {}
+        }, {}, []
 
+    # TODO: РЕФАКТОРИТЬ ЭТУ ЖЕСТЬ
+    # И ОПТИМИЗИРОВАТЬ ТАК ЧТОБЫ СЧИТАЛОСЬ ТОЛЬКО ДЛЯ ОДНОГО УЧАСТКА
+    climate_corr = ia.compare_with_climate(isotope, clim_index, start_year=1960, end_year=2000)
+    climate_corr = climate_corr[climate_corr['Site Code'] == site_code]
+    climate_corr = climate_corr.drop(columns=['Site Code'])
+    climate_corr = climate_corr.set_index('Month').T.iloc[:,8:20]
+    climate_corr_res = {}
+    for column in climate_corr.columns:
+        r = climate_corr[column][0]
+        p = climate_corr[column][1]
+        climate_corr_res[column] = f'{r:.2f}\n(p={p:.4f})'
+    
     climate_data = climate_data[climate_data['Month'] == 1]
     data = pd.merge(isotope_data, climate_data, on='Year', how='inner')
     p = Polynomial()
@@ -162,7 +183,7 @@ def update_graphs(site_code, isotope, clim_index):
                     'showlegend': False,
                     'annotations': [{'x': annotation_x, 'y':annotation_y, 'text':p.get_equation(), 'showarrow': False, 'font': {'size': 16}}]
                 }
-            }
+            }, [climate_corr_res]
 
 
 sites = pd.read_csv(config['sites_path'])
@@ -184,7 +205,7 @@ map.update_layout(
 
 dashboard.layout = html.Div(children=[
     dbc.Container([
-        html.H1(children='Tree-ring stable isotope data'),
+        html.H1(children='Tree-ring stable isotope exploratory dashboard'),
         dbc.Row(
             [
                 dbc.Col(
@@ -219,17 +240,14 @@ dashboard.layout = html.Div(children=[
 
         dbc.Label('Click a cell in the table:', id="label-demo" ),
         dcc.Graph(id='sites-map', figure=map),
-        # TODO: Вернуть таблицу с помесячной корреляцией
         dash_table.DataTable(
-            #dendroclim_df.to_dict('records'),
-            id='dendroclim',
-            #style_data_conditional=flatten(get_highlight_conditions()) + flatten(get_highlight_conditions(negative=True)),
+            id='climate-corr-table',
+            style_data_conditional=flatten(get_highlight_conditions()) + flatten(get_highlight_conditions(negative=True)),
             style_cell={
                 'whiteSpace': 'pre-line',
                 'textAlign': 'center'
             }
         ),
-        dbc.Alert(id='tbl_out', children=''),
         dbc.Row(
                 [
                     dbc.Col(dcc.Graph(
