@@ -61,6 +61,18 @@ dashboard.layout = html.Div(children=[
                 'textAlign': 'center'
             }
         ),
+        # TODO: границы по-умолчанию из конфига
+        dcc.RangeSlider(
+            1900, 2020,
+            id='year-range-slider',
+            allowCross=False,
+            marks = {i: str(i) for i in range(1900, 2021, 10)},
+            value=[1960, 2000],
+            tooltip={
+                    "placement": "bottom",
+                    "always_visible": True
+                }
+        ),
         dbc.Row(
                 [
                     dbc.Col(dcc.Graph(

@@ -81,20 +81,71 @@ def update_sites_map(site_code, map_fig):
     return map_fig
 
 
-# TODO: Добавить выбор месяца (возможно через таблицу)
-# TODO: починить латех в уравнении
-# TODO: Добавить выбор start_year и end_year, слайдером (по-умолчанию ставить то, что в конфиге)
 @callback(
-    Output('simple-graph', 'figure'),
-    Output('scatter-graph', 'figure'),
     Output('climate-corr-table', 'data'),
     [
         Input('site-selection', 'value'),
         Input('isotope-selection', 'value'),
         Input('climate-index-selection', 'value'),
+        Input('year-range-slider', 'value')
     ]
 )
-def update_graphs(site_code, isotope, clim_index):
+def update_climate_corr_table(site_code, isotope, clim_index, year_limits):
+
+    if not all([site_code, isotope, clim_index, year_limits]):
+        return []
+
+    climate_corr = ia.compare_with_climate(
+        isotope,
+        clim_index,
+        site_codes=[site_code],
+        start_year=year_limits[0],
+        end_year=year_limits[1]
+    )
+    climate_corr = climate_corr[climate_corr['Site Code'] == site_code]
+    climate_corr = climate_corr.drop(columns=['Site Code'])
+    climate_corr = climate_corr.set_index('Month').T.iloc[:,8:20]
+    climate_corr_res = {}
+    for column in climate_corr.columns:
+        r = climate_corr[column][0]
+        p = climate_corr[column][1]
+        climate_corr_res[column] = f'{r:.2f}\n(p={p:.4f})'
+    
+    return [climate_corr_res]
+
+# TODO: Обновление границ слайдера в зависимости от станции
+@callback(
+    Output('year-range-slider', 'min'),
+    Output('year-range-slider', 'max'),
+    Output('year-range-slider', 'marks'),
+
+    [
+        Input('site-selection', 'value'),
+        Input('climate-index-selection', 'value')
+    ]
+)
+def update_year_range_slider(site_code, clim_index):
+    if not (site_code and clim_index):
+        return
+    site = ia.__get_sites_by_pattern__({'code': site_code})[0]
+    climate_data = ia.climate_data.get(site.station_name)
+    if not climate_data:
+        return
+    pass
+
+# TODO: Добавить выбор месяца 
+# TODO: починить латех в уравнении
+@callback(
+    Output('simple-graph', 'figure'),
+    Output('scatter-graph', 'figure'),
+    [
+        Input('site-selection', 'value'),
+        Input('isotope-selection', 'value'),
+        Input('climate-index-selection', 'value'),
+        Input('year-range-slider', 'value')
+    ]
+)
+def update_graphs(site_code, isotope, clim_index, year_limits):
 
     if not site_code:
         return {}, {}, []
@@ -126,17 +177,12 @@ def update_graphs(site_code, isotope, clim_index):
         }, {}, []
 
     # TODO: РЕФАКТОРИТЬ ЭТУ ЖЕСТЬ
-    climate_corr = ia.compare_with_climate(isotope, clim_index, site_codes=[site_code], start_year=1960, end_year=2000)
-    climate_corr = climate_corr[climate_corr['Site Code'] == site_code]
-    climate_corr = climate_corr.drop(columns=['Site Code'])
-    climate_corr = climate_corr.set_index('Month').T.iloc[:,8:20]
-    climate_corr_res = {}
-    for column in climate_corr.columns:
-        r = climate_corr[column][0]
-        p = climate_corr[column][1]
-        climate_corr_res[column] = f'{r:.2f}\n(p={p:.4f})'
     
-    climate_data = climate_data[climate_data['Month'] == 1]
+    climate_data = climate_data[
+        (climate_data['Month'] == 1) &
+        (climate_data['Year'] >= year_limits[0]) &
+        (climate_data['Year'] <= year_limits[1])
+    ]
     data = pd.merge(isotope_data, climate_data, on='Year', how='inner')
     p = Polynomial()
     p.fit(data[clim_index], data['Value'], deg=1)
@@ -166,7 +212,7 @@ def update_graphs(site_code, isotope, clim_index):
                     'showlegend': False,
                     'annotations': [{'x': annotation_x, 'y':annotation_y, 'text':p.get_equation(), 'showarrow': False, 'font': {'size': 16}}]
                 }
-            }, [climate_corr_res]
+            }
 
 
 sites = pd.read_csv(config['sites_path'])
