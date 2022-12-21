@@ -335,6 +335,8 @@ class TRSIsotopesAnalyser:
             self,
             isotope: str,
             climate_index: str,
+            *,
+            site_codes: Optional[List[str]] = None,
             compare_by: ComparisonFunction = compare_pearsonr,
             sort_by: Callable[[IsotopeData], int] = None,
             start_year: Optional[int] = None,
@@ -344,6 +346,7 @@ class TRSIsotopesAnalyser:
         Params:
             isotope: isotope name (13C, 2H, 18O, etc.)
             climate_index: climate index name (Temperature, Precipitation, VPD, etc.)
+            site_codes: List of site codes to compare
             compare_by: comparison function (default: pearson correlation)
             sort_by: sort function for isotopes (by lat \ lon, name etc.)
             start_year: beginning of comparison period
@@ -356,7 +359,14 @@ class TRSIsotopesAnalyser:
                 P-value: float
         """
 
-        isotopes = self.__get_isotopes_by_pattern__(isotope)
+        if site_codes:
+            isotopes = []
+            for site_code in site_codes:
+                isotopes.append(
+                    self.__get_isotope_by_site_code__(isotope, site_code)
+                )
+        else:
+            isotopes = self.__get_isotopes_by_pattern__(isotope)
         
         if sort_by:
             isotopes = sorted(isotopes, key=sort_by)

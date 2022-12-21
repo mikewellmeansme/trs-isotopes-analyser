@@ -126,8 +126,7 @@ def update_graphs(site_code, isotope, clim_index):
         }, {}, []
 
     # TODO: РЕФАКТОРИТЬ ЭТУ ЖЕСТЬ
-    # И ОПТИМИЗИРОВАТЬ ТАК ЧТОБЫ СЧИТАЛОСЬ ТОЛЬКО ДЛЯ ОДНОГО УЧАСТКА
-    climate_corr = ia.compare_with_climate(isotope, clim_index, start_year=1960, end_year=2000)
+    climate_corr = ia.compare_with_climate(isotope, clim_index, site_codes=[site_code], start_year=1960, end_year=2000)
     climate_corr = climate_corr[climate_corr['Site Code'] == site_code]
     climate_corr = climate_corr.drop(columns=['Site Code'])
     climate_corr = climate_corr.set_index('Month').T.iloc[:,8:20]
