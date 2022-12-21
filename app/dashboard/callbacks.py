@@ -1,29 +1,187 @@
-import plotly.express as px
-import pandas as pd
 from dash import (
     Input,
     Output,
     callback
 )
+from app.trs_isotopes_analyser import TRSIsotopesAnalyser
+from app.config import load_config
+import pandas as pd
+import plotly.express as px
+from zhutils.approximators.polynomial import Polynomial
 
-from app.utils.functions import dropna_pearsonr, get_polynomial_fit, get_equation
-from app.dashboard.dash_utils import get_coh_and_clim, get_highlight_conditions
+config = load_config('config/config.24sites.yaml')
+ia = TRSIsotopesAnalyser(
+    config['sites_path'],
+    config['isotopes_path'],
+    config['climate_path']
+)
 
+# TODO: Добавить возможность отображения на карте станций ВМО и подсветка тех станций данные по которым использовались.
 
-
-@callback(Output('tbl_out', 'children'), Input('dendroclim', 'active_cell'))
-def update_pearsonr(active_cell):
-
-    if not active_cell:
-        return ''
+@callback(
+    Output('isotope-selection', 'options'),
+    Output('isotope-selection', 'placeholder'), 
+    Output('climate-index-selection', 'placeholder'), 
+    Input('site-selection', 'value')
+)
+def update_isotope_selection(site_code):
+    if not site_code:
+        return [], 'First select site code', 'First select site code'
     
-    if active_cell['column_id'] in ['Observation', 'Char']:
-        return ''
+    all_isotopes = ["13C", "18O", "2H"]
+    result = []
+    for isotope in all_isotopes:
+        i = ia.__get_isotope_by_site_code__(isotope, site_code)
+        if i:
+            result.append(isotope)
+    return result, 'Select isotope', 'Select climate index'
+
+
+@callback(
+    Output('climate-index-selection', 'options'),
+    Output('label-demo', 'children'),
+    Input('site-selection', 'value')
+)
+def update_climate_index_selection(site_code):
+    if not site_code:
+        return [], ''
     
-    res, obs, clim = get_coh_and_clim(active_cell, dendroclim_df, climate_data, df_COH)
+    site = ia.__get_sites_by_pattern__({'code': site_code})[0]
+    clim_data = ia.climate_data.get(site.station_name)
 
-    r, p = dropna_pearsonr(res[obs], res[clim])
-    return  f'{r:.2f} (p={p:.4f})'
+    if clim_data is None:
+        return [], f'There is no climate data for {site_code}'
+    
+    result = [column for column in clim_data.columns if column not in {'Year', 'Month'}]
+
+    wmo = "" if pd.isna(site.station_wmo_code) else f" (WMO: {site.station_wmo_code})"
+
+    start_year, end_year = min(clim_data['Year']), max(clim_data['Year'])
+
+    return result, f'Climate station: {site.station_name}{wmo} ({start_year}-{end_year})'
 
 
+@callback(
+    Output('sites-map', 'figure'),
+    [
+        Input('site-selection', 'value'),
+        Input('sites-map', 'figure')
+    ]
+)
+def update_sites_map(site_code, map_fig):
 
+    if not site_code:
+        return map_fig
+    
+    site = ia.__get_sites_by_pattern__({'code': site_code})[0]
+
+    map_fig['layout']['mapbox']['center']['lat'] = site.lat
+    map_fig['layout']['mapbox']['center']['lon'] = site.lon
+
+    return map_fig
+
+
+# TODO: Добавить выбор месяца (возможно через таблицу)
+# TODO: починить латех в уравнении
+# TODO: Добавить выбор start_year и end_year, слайдером (по-умолчанию ставить то, что в конфиге)
+@callback(
+    Output('simple-graph', 'figure'),
+    Output('scatter-graph', 'figure'),
+    Output('climate-corr-table', 'data'),
+    [
+        Input('site-selection', 'value'),
+        Input('isotope-selection', 'value'),
+        Input('climate-index-selection', 'value'),
+    ]
+)
+def update_graphs(site_code, isotope, clim_index):
+
+    if not site_code:
+        return {}, {}, []
+    
+    if not isotope:
+        return {}, {}, []
+    
+    isotope_data = ia.__get_isotope_by_site_code__(isotope, site_code)
+    
+    if not isotope_data:
+        return {}, {}, []
+    
+    isotope_data = isotope_data.data
+
+    site = ia.__get_sites_by_pattern__({'code': site_code})[0]
+
+    climate_data = ia.climate_data.get(site.station_name)
+
+    if not clim_index or climate_data is None or clim_index not in climate_data.columns:
+        return {
+            'data': [
+                    {'x': isotope_data['Year'], 'y': isotope_data['Value'], 'name': f'{isotope} {site_code}'},
+                ],
+                'layout': {
+                    'title': f'{isotope} {site_code} plot',
+                    'xaxis': {'title' :'Year'},
+                    'yaxis': {'title': isotope},
+                }
+        }, {}, []
+
+    # TODO: РЕФАКТОРИТЬ ЭТУ ЖЕСТЬ
+    # И ОПТИМИЗИРОВАТЬ ТАК ЧТОБЫ СЧИТАЛОСЬ ТОЛЬКО ДЛЯ ОДНОГО УЧАСТКА
+    climate_corr = ia.compare_with_climate(isotope, clim_index, start_year=1960, end_year=2000)
+    climate_corr = climate_corr[climate_corr['Site Code'] == site_code]
+    climate_corr = climate_corr.drop(columns=['Site Code'])
+    climate_corr = climate_corr.set_index('Month').T.iloc[:,8:20]
+    climate_corr_res = {}
+    for column in climate_corr.columns:
+        r = climate_corr[column][0]
+        p = climate_corr[column][1]
+        climate_corr_res[column] = f'{r:.2f}\n(p={p:.4f})'
+    
+    climate_data = climate_data[climate_data['Month'] == 1]
+    data = pd.merge(isotope_data, climate_data, on='Year', how='inner')
+    p = Polynomial()
+    p.fit(data[clim_index], data['Value'], deg=1)
+    annotation_x = data[clim_index].max() - (data[clim_index].max() - data[clim_index].min())/2
+    annotation_y = data['Value'].max()
+
+    return  {
+                'data': [
+                    {'x': isotope_data['Year'], 'y': isotope_data['Value'], 'name': f'{isotope} {site_code}'},
+                    {'x': climate_data['Year'], 'y': climate_data[clim_index], 'name': clim_index, 'yaxis': 'y2'},
+                ],
+                'layout': {
+                    'title': f'{isotope} {site_code} and {clim_index} plot',
+                    'xaxis': {'title' :'Year'},
+                    'yaxis': {'title': isotope},
+                    'yaxis2': {'title': clim_index, 'overlaying':'y', 'side': 'right', 'showgrid': False, 'showline': True,}
+                }
+            }, {
+                'data': [
+                    {'x': data[clim_index], 'y': data['Value'], 'type' :'scatter', 'mode':'markers', 'marker': {'color': 'grey', 'size':9}, 'text': data['Year'], 'name': 'Scatterplot'},
+                    {'x': data[clim_index], 'y': p.predict(data[clim_index]), 'line': {'color':'black','width': 2}, 'name': 'LS fit'},
+                ],
+                'layout': {
+                    'title': f'{isotope} {site_code} and {clim_index} trend',
+                    'xaxis': {'title' : clim_index},
+                    'yaxis': {'title' : isotope},
+                    'showlegend': False,
+                    'annotations': [{'x': annotation_x, 'y':annotation_y, 'text':p.get_equation(), 'showarrow': False, 'font': {'size': 16}}]
+                }
+            }, [climate_corr_res]
+
+
+sites = pd.read_csv(config['sites_path'])
+sites['size'] = 1
+map = px.scatter_mapbox(
+        sites,
+        lat="Latitude (degrees N)", lon="Longitude (degrees E)",
+        hover_name="Site name", hover_data=["Site code", "Elevation"],
+        zoom=3, height=600, width=1400,
+        size="size", size_max=20,
+    )
+map.update_layout(
+    title='Sites map',
+    mapbox_style='carto-positron',
+    autosize=True,
+    hovermode='closest'
+)
