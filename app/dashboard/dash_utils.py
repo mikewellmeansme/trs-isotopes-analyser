@@ -1,4 +1,4 @@
-months = ['September', 'October', 'November', 'December', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August']
+months = ['September prev', 'October prev', 'November prev', 'December prev', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August']
 
 
 def get_highlight_conditions(negative=False):
