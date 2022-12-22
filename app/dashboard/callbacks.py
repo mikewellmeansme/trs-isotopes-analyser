@@ -149,7 +149,7 @@ def update_year_range_slider(site_code, clim_index, year_limits):
             [max(year_limits[0], start_year), min(year_limits[1], end_year)]
         )
 
-# TODO: Добавить выбор месяца 
+
 # TODO: починить латех в уравнении
 @callback(
     Output('simple-graph', 'figure'),
@@ -212,7 +212,8 @@ def update_graphs(site_code, isotope, clim_index, year_limits, active_cell):
         (climate_data['Month'] == month) &
         (climate_data['Year'] >= year_limits[0]) &
         (climate_data['Year'] <= year_limits[1])
-    ].shift(shift)
+    ]
+    climate_data[clim_index] = climate_data[clim_index].shift(shift)
 
     data = pd.merge(isotope_data, climate_data, on='Year', how='inner')
     p = Polynomial()
