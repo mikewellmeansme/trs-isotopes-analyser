@@ -8,6 +8,8 @@ from app.config import load_config
 import pandas as pd
 import plotly.express as px
 from zhutils.approximators.polynomial import Polynomial
+from zhutils.common import Months
+
 
 config = load_config('config/config.24sites.yaml')
 ia = TRSIsotopesAnalyser(
@@ -156,10 +158,11 @@ def update_year_range_slider(site_code, clim_index, year_limits):
         Input('site-selection', 'value'),
         Input('isotope-selection', 'value'),
         Input('climate-index-selection', 'value'),
-        Input('year-range-slider', 'value')
+        Input('year-range-slider', 'value'),
+        Input('climate-corr-table', 'active_cell')
     ]
 )
-def update_graphs(site_code, isotope, clim_index, year_limits):
+def update_graphs(site_code, isotope, clim_index, year_limits, active_cell):
 
     if not site_code:
         return {}, {}
@@ -191,12 +194,26 @@ def update_graphs(site_code, isotope, clim_index, year_limits):
         }, {}
 
     # TODO: РЕФАКТОРИТЬ ЭТУ ЖЕСТЬ
+
+    month = 1
+    shift = 0
+    month_name = Months(1).name
+
+    if active_cell:
+        if 'prev' in active_cell['column_id']:
+            month_name = active_cell['column_id'].split(' ')[0]
+            shift = 1
+        else:
+            month_name = active_cell['column_id']
+    
+    month = Months[month_name].value
     
     climate_data = climate_data[
-        (climate_data['Month'] == 1) &
+        (climate_data['Month'] == month) &
         (climate_data['Year'] >= year_limits[0]) &
         (climate_data['Year'] <= year_limits[1])
-    ]
+    ].shift(shift)
+
     data = pd.merge(isotope_data, climate_data, on='Year', how='inner')
     p = Polynomial()
     p.fit(data[clim_index], data['Value'], deg=1)
@@ -209,7 +226,7 @@ def update_graphs(site_code, isotope, clim_index, year_limits):
                     {'x': climate_data['Year'], 'y': climate_data[clim_index], 'name': clim_index, 'yaxis': 'y2'},
                 ],
                 'layout': {
-                    'title': f'{isotope} {site_code} and {clim_index} plot',
+                    'title': f'{isotope} {site_code} and {clim_index} {month_name} {"prev " if shift else ""}plot',
                     'xaxis': {'title' :'Year'},
                     'yaxis': {'title': isotope},
                     'yaxis2': {'title': clim_index, 'overlaying':'y', 'side': 'right', 'showgrid': False, 'showline': True,}
@@ -220,7 +237,7 @@ def update_graphs(site_code, isotope, clim_index, year_limits):
                     {'x': data[clim_index], 'y': p.predict(data[clim_index]), 'line': {'color':'black','width': 2}, 'name': 'LS fit'},
                 ],
                 'layout': {
-                    'title': f'{isotope} {site_code} and {clim_index} trend',
+                    'title': f'{isotope} {site_code} and {clim_index} {month_name} {"prev " if shift else ""}trend',
                     'xaxis': {'title' : clim_index},
                     'yaxis': {'title' : isotope},
                     'showlegend': False,
