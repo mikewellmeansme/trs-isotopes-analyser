@@ -113,25 +113,39 @@ def update_climate_corr_table(site_code, isotope, clim_index, year_limits):
     
     return [climate_corr_res]
 
-# TODO: Обновление границ слайдера в зависимости от станции
+
 @callback(
     Output('year-range-slider', 'min'),
     Output('year-range-slider', 'max'),
     Output('year-range-slider', 'marks'),
-
+    Output('year-range-slider', 'value'),
     [
         Input('site-selection', 'value'),
-        Input('climate-index-selection', 'value')
+        Input('climate-index-selection', 'value'),
+        Input('year-range-slider', 'value')
     ]
 )
-def update_year_range_slider(site_code, clim_index):
+def update_year_range_slider(site_code, clim_index, year_limits):
+
     if not (site_code and clim_index):
-        return
+        return 1900, 2020, {i: str(i) for i in range(1900, 2021, 10)}, [1960, 2000]
+    
     site = ia.__get_sites_by_pattern__({'code': site_code})[0]
     climate_data = ia.climate_data.get(site.station_name)
-    if not climate_data:
-        return
-    pass
+
+    if climate_data is None:
+        return 1900, 2020, {i: str(i) for i in range(1900, 2021, 10)}, [1960, 2000]
+    
+    climate_data = climate_data[['Year', 'Month', clim_index]].dropna()
+    start_year = climate_data['Year'].min()
+    end_year = climate_data['Year'].max()
+
+    return (
+            start_year,
+            end_year,
+            {i: str(i) for i in range(start_year, end_year+1) if i % 10 == 0},
+            [max(year_limits[0], start_year), min(year_limits[1], end_year)]
+        )
 
 # TODO: Добавить выбор месяца 
 # TODO: починить латех в уравнении
@@ -148,15 +162,15 @@ def update_year_range_slider(site_code, clim_index):
 def update_graphs(site_code, isotope, clim_index, year_limits):
 
     if not site_code:
-        return {}, {}, []
+        return {}, {}
     
     if not isotope:
-        return {}, {}, []
+        return {}, {}
     
     isotope_data = ia.__get_isotope_by_site_code__(isotope, site_code)
     
     if not isotope_data:
-        return {}, {}, []
+        return {}, {}
     
     isotope_data = isotope_data.data
 
@@ -174,7 +188,7 @@ def update_graphs(site_code, isotope, clim_index, year_limits):
                     'xaxis': {'title' :'Year'},
                     'yaxis': {'title': isotope},
                 }
-        }, {}, []
+        }, {}
 
     # TODO: РЕФАКТОРИТЬ ЭТУ ЖЕСТЬ
     
