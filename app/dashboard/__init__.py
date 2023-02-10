@@ -8,31 +8,71 @@ from dash import (
     dcc,
     html
 )
-from utils.functions import  flatten
+from app.utils.functions import  flatten
 from app.dashboard.dash_utils import get_highlight_conditions
 from app.dashboard.callbacks import *
 
 
 dashboard = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# TODO: Центрирование карты на выбранной станции
-# TODO: График коэффициентов корреляции по месяцам
-# TODO: Добавить возможность отображения на карте станций ВМО и подсветка тех станций данные по которым использовались.
 
 dashboard.layout = html.Div(children=[
     dbc.Container([
-        html.H1(children='COH climate correlation'),
-        dbc.Label('Click a cell in the table:'),
+        html.H1(children='Tree-ring stable isotope exploratory dashboard'),
+        dbc.Row(
+            [
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="site-selection",
+                        placeholder='Select site code',
+                        options = [ site.code for site in ia.sites ]
+                    ),
+                    width="4"
+                ),
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="isotope-selection",
+                        placeholder='First select site code',
+                        options = [],
+                        searchable=False
+                    ),
+                    width="4"
+                ),
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="climate-index-selection",
+                        placeholder='First select site code',
+                        options=[],
+                        searchable=False
+                    ),
+                    width="4"
+                )
+            ],
+            justify="center",
+        ),
+
+        dbc.Label('Click a cell in the table:', id="label-demo" ),
+        dcc.Graph(id='sites-map', figure=map),
         dash_table.DataTable(
-            dendroclim_df.to_dict('records'),
-            id='dendroclim',
+            id='climate-corr-table',
             style_data_conditional=flatten(get_highlight_conditions()) + flatten(get_highlight_conditions(negative=True)),
             style_cell={
                 'whiteSpace': 'pre-line',
                 'textAlign': 'center'
             }
         ),
-        dbc.Alert(id='tbl_out', children=''),
+        # TODO: границы по-умолчанию из конфига
+        dcc.RangeSlider(
+            1900, 2020,
+            id='year-range-slider',
+            allowCross=False,
+            marks = {i: str(i) for i in range(1900, 2021, 10)},
+            value=[1960, 2000],
+            tooltip={
+                    "placement": "bottom",
+                    "always_visible": True
+                }
+        ),
         dbc.Row(
                 [
                     dbc.Col(dcc.Graph(
@@ -54,8 +94,6 @@ dashboard.layout = html.Div(children=[
                         }
                     ), width=6)
                 ]
-        ),
-        dcc.Graph(id='sites-map')
-        #dash_table.DataTable(id='soure_table'),
+        )
     ])
 ])
