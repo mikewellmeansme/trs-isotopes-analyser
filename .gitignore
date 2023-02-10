@@ -1,7 +1,6 @@
 __pycache__
 .idea
 data/*/isotopes
-results/Paper_003
 results/Paper_004
 output
 notebooks
