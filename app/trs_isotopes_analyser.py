@@ -483,6 +483,7 @@ class TRSIsotopesAnalyser:
             prev_months: List[int],
             curr_months: List[int],
             isotope_to_color: Dict[str, str],
+            isotope_to_name: Dict[str, str],
             compare_by: ComparisonFunction = compare_pearsonr,
             sort_by: Callable[[IsotopeData], int] = None,
             start_year: Optional[int] = None,
@@ -536,11 +537,20 @@ class TRSIsotopesAnalyser:
         # TODO: get rid of the hard-coded values
 
         text_pos = max(hm.ax_row_colors.get_ylim())/2
-        hm.ax_row_colors.text(-3.7, text_pos-2, '$-$ $\delta^{2}H$', fontsize = 16)
-        hm.ax_row_colors.text(-3.7, text_pos, '$-$ $\delta^{13}C$', fontsize = 16)
-        hm.ax_row_colors.text(-3.7, text_pos+2, '$-$ $\delta^{18}O$', fontsize = 16)
-        hm.ax_row_colors.add_patch(plt.Rectangle((-5, text_pos-2-1+.15), 1, 1,facecolor='#2DFAA5', clip_on=False,linewidth = 1))
-        hm.ax_row_colors.add_patch(plt.Rectangle((-5, text_pos-1+.15), 1, 1,facecolor='#E3D41E', clip_on=False,linewidth = 1))
-        hm.ax_row_colors.add_patch(plt.Rectangle((-5, text_pos+2-1+.15), 1, 1,facecolor='#FA5D2A', clip_on=False,linewidth = 1))
+
+        for i, isotope in enumerate(isotopes, start=-1):
+            
+            hm.ax_row_colors.text(-3.7, text_pos + i*2, f'$-$ {isotope_to_name[isotope]}', fontsize = 16)
+
+            # TODO: better tune for the Rectangle y
+            hm.ax_row_colors.add_patch(
+                plt.Rectangle(
+                    (-5, text_pos+ i*2 -0.85),
+                    1, 1,
+                    facecolor=isotope_to_color[isotope],
+                    clip_on=False,
+                    linewidth = 1
+                )
+            )
 
         return hm
