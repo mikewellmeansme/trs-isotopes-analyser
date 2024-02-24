@@ -534,8 +534,6 @@ class TRSIsotopesAnalyser:
         hm.ax_cbar.yaxis.tick_left()
         hm.ax_cbar.yaxis.set_label_position("left")
 
-        # TODO: get rid of the hard-coded values
-
         text_pos = max(hm.ax_row_colors.get_ylim())/2
 
         for i, isotope in enumerate(isotopes, start=-1):
