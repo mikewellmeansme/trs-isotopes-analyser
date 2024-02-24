@@ -1,0 +1,62 @@
+sites_path: "data/processed/trw/Sites.csv"
+isotopes_path: "data/processed/trw/2024_trw_and_isotopes.xlsx"
+climate_path: "data/processed/climate"
+
+plot_font:
+  size: "16"
+  family: "Times New Roman"
+
+save_path: "results/Paper_004"
+
+site_to_order:
+  YAK: 1
+  TAY: 2
+  TUR: 3
+  ENE: 4
+  KHAK: 5
+  
+site_to_color:
+  YAK: blue
+  TAY: blue
+  TUR: blue
+  ENE: blue
+  KHAK: blue
+
+isotopes:
+  - TRW
+  - 13C
+  - 18O
+
+isotope_to_name:
+  TRW: "TRW"
+  13C: "$\u03B4^{13}$C"
+  18O: "$\u03B4^{18}$O"
+  
+isotope_to_color:
+  TRW: "#2DFAA5"
+  13C: "#E3D41E"
+  18O: "#FA5D2A"
+
+isotope_to_title:
+  TRW: "TRW$"
+  13C: "$\u03B4^{13}C$, $\u2030$"
+  18O: "$\u03B4^{18}O$, $\u2030$"
+
+clim_indexes:
+  - "Temperature"
+  - "Precipitation"
+  - "VPD"
+  - "Relative Humidity"
+  - "Sunshine Duration"
+
+clim_index_to_name:
+  Temp: "Temperature"
+  Prec: "Precipitation"
+  SD: "Sunshine Duration"
+  VPD: "VPD"
+  RH: "Relative Humidity"
+
+heatmap_kwargs:
+  start_year: 1960
+  end_year: 2000
+  min_p_value: 0.05
