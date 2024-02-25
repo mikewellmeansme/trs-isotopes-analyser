@@ -476,6 +476,29 @@ class TRSIsotopesAnalyser:
 
         return stats, p_vals
     
+    _default_clustermap_kwargs = {
+        'cmap': "seismic",
+        'col_cluster': False,
+        'row_cluster': False,
+        'linewidths': 1,
+        'linecolor': 'gray',
+        'cbar_pos': (0.12, .7, .05, .18),
+        'cbar_kws': {'ticks': [-.6, -.3, 0, .3, .6]},
+        'vmin': -0.7, 'vmax': 0.7,
+        'dendrogram_ratio': (0.2, 0.05)
+    }
+    _default_rectangles_kwargs = {
+        'text_x': -3.7,
+        'text_base_y': 0,
+        'fontsize': 16,
+        'step': 2,
+        'rectangle_x': -5,
+        'rectangle_base_y': -0.85,
+        'width': 1,
+        'height': 1,
+        'linewidth': 1
+    }
+
     def heatmap(
             self,
             isotopes: List[str],
@@ -489,7 +512,8 @@ class TRSIsotopesAnalyser:
             start_year: Optional[int] = None,
             end_year: Optional[int] = None,
             min_p_value: float = 0.05,
-            clustermap_kwargs: Optional[Dict] = None
+            clustermap_kwargs: Optional[Dict] = None,
+            rectangles_kwargs: Optional[Dict] = None
         ) -> sns.matrix.ClusterGrid:
 
         stats, mask = self._get_wide_comparison_(
@@ -505,18 +529,12 @@ class TRSIsotopesAnalyser:
 
         row_colors = [isotope_to_color[i.split('_')[0]] for i in stats.index]
 
-        clustermap_kwargs = {
-            'row_colors': row_colors,
-            'cmap': "seismic",
-            'col_cluster': False,
-            'row_cluster': False,
-            'linewidths': 1,
-            'linecolor': 'gray',
-            'cbar_pos': (0.12, .7, .05, .18),
-            'cbar_kws': dict(ticks=[-.6, -.3, 0, .3, .6]),
-            'vmin': -0.7, 'vmax': 0.7,
-            'dendrogram_ratio': (0.2, 0.05)
-        } or clustermap_kwargs
+        clustermap_kwargs = {} or clustermap_kwargs
+        clustermap_kwargs = self._default_clustermap_kwargs | clustermap_kwargs 
+        clustermap_kwargs['row_colors'] = row_colors
+
+        rectangles_kwargs = {} or rectangles_kwargs
+        rectangles_kwargs = self._default_rectangles_kwargs | rectangles_kwargs
 
         hm = sns.clustermap(
             data=stats.fillna(0),
@@ -534,20 +552,28 @@ class TRSIsotopesAnalyser:
         hm.ax_cbar.yaxis.tick_left()
         hm.ax_cbar.yaxis.set_label_position("left")
 
-        text_pos = max(hm.ax_row_colors.get_ylim())/2
+        vertical_center = max(hm.ax_row_colors.get_ylim())/2
 
         for i, isotope in enumerate(isotopes, start=-1):
             
-            hm.ax_row_colors.text(-3.7, text_pos + i*2, f'$-$ {isotope_to_name[isotope]}', fontsize = 16)
+            hm.ax_row_colors.text(
+                rectangles_kwargs['text_x'],
+                vertical_center + i * rectangles_kwargs['step'] + rectangles_kwargs['text_base_y'] ,
+                f'$-$ {isotope_to_name[isotope]}',
+                fontsize = rectangles_kwargs['fontsize']
+            )
 
-            # TODO: better tune for the Rectangle y
             hm.ax_row_colors.add_patch(
                 plt.Rectangle(
-                    (-5, text_pos+ i*2 -0.85),
-                    1, 1,
+                    (
+                        rectangles_kwargs['rectangle_x'],
+                        vertical_center + i * rectangles_kwargs['step'] + rectangles_kwargs['rectangle_base_y'] 
+                    ),
+                    rectangles_kwargs['width'],
+                    rectangles_kwargs['height'],
                     facecolor=isotope_to_color[isotope],
                     clip_on=False,
-                    linewidth = 1
+                    linewidth=rectangles_kwargs['linewidth']
                 )
             )
 
