@@ -23,22 +23,18 @@ site_to_color:
   KHAK: black
 
 isotopes:
-  - TRW
   - 13C
   - 18O
 
 isotope_to_name:
-  TRW: "TRW"
   13C: "$\u03B4^{13}$C"
   18O: "$\u03B4^{18}$O"
   
 isotope_to_color:
-  TRW: "#2DFAA5"
   13C: "#E3D41E"
   18O: "#FA5D2A"
 
 isotope_to_title:
-  TRW: "TRW$"
   13C: "$\u03B4^{13}C$, $\u2030$"
   18O: "$\u03B4^{18}O$, $\u2030$"
 
@@ -60,3 +56,8 @@ heatmap_kwargs:
   start_year: 1960
   end_year: 2004
   min_p_value: 0.05
+  clustermap_kwargs:
+    figsize: [10, 5]
+  rectangles_kwargs:
+    text_base_y: 2
+    rectangle_base_y: 1.15
