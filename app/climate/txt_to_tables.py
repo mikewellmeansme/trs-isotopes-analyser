@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # Функции для конвертации данных с http://meteo.ru/data  (http://aisori-m.meteo.ru/waisori/)
 # из .txt формата в .csv и .xlsx
@@ -41,15 +42,20 @@ def delete_all_spaces_from_txt(file_path: str) -> None:
 def txt_to_df(station: str, char: str,
               colums_names: list,
               input_path='input', output_path='output',
-              save_csv=True, save_ecel=False) -> pd.DataFrame:
+              save_csv=True, save_ecel=False,
+              delim_whitespace=True, sep=',') -> pd.DataFrame:
     """
     input_path: Relative path to txt station file INCLUDING name of a file
     output_path: Relative path to folder to save resulst EXCLUDING name of a file
     """
-    delete_all_spaces_from_txt(input_path)
-    df = pd.read_csv(input_path, sep=';', header=None)
+    if delim_whitespace:
+        df = pd.read_csv(input_path, header=None, delim_whitespace=delim_whitespace)
+    else:
+        delete_all_spaces_from_txt(input_path)
+        df = pd.read_csv(input_path, sep=sep, header=None)
 
     df = df.rename(columns={i:colums_names[i] for i in range(len(colums_names))})
+    df.replace(9999.9, np.nan, inplace=True)
 
     if save_csv:
         df.to_csv(f'{output_path}/{char}_{station}.csv', index=False)
