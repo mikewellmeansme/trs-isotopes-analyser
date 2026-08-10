@@ -30,4 +30,6 @@ Used in:
 
 * Churakova, O.V.; Fonti, M.V.; Barinov, V.V.; Zharkov, M.S.; Taynik, A.V.; Trushkina, T.V.; Kirdyanov, A.V.; Arzac, A.; Saurer, M. Towards the Third Millennium Changes in Siberian Triple Tree-Ring Stable Isotopes. Forests 2022, 13, 934. https://doi.org/10.3390/f13060934
 
-* Churakova O. V.; Porter, T.J.; Zharkov, M.S.; Fonti, M.V.; Barinov, V.V.; Taynik, A.V.; Kirdyanov, A.V.; Knorre A.A.; Wegmann M.; Trushkina, T.V.; Koshurnikova N.N.; Vaganov E.A.; Myglan V.S.; Siegwolf R.T.W.; Saurer, M. Climate impacts on tree-ring stable isotopes across the Northern Hemispheric boreal zone. Science of The Total Environment 2023, 870, 161644. https://doi.org/10.1016/j.scitotenv.2023.161644
+* Churakova O.V.; Porter, T.J.; Zharkov, M.S.; Fonti, M.V.; Barinov, V.V.; Taynik, A.V.; Kirdyanov, A.V.; Knorre A.A.; Wegmann M.; Trushkina, T.V.; Koshurnikova N.N.; Vaganov E.A.; Myglan V.S.; Siegwolf R.T.W.; Saurer, M. Climate impacts on tree-ring stable isotopes across the Northern Hemispheric boreal zone. Science of The Total Environment 2023, 870, 161644. https://doi.org/10.1016/j.scitotenv.2023.161644
+
+* Churakova, O.V.; Siegwolf, R.T.W; Zharkov, M.S.; Saurer, M. Dual carbon and oxygen isotopes in Siberian tree rings as indicator of millennia sunshine duration changes. Science of The Total Environment 2024, 12, 172042. https://doi.org/10.1016/j.scitotenv.2024.172042
