@@ -1,6 +1,6 @@
 {
-  "input_file": "WUE_data.xlsx",
-  "output_dir": "results",
+  "input_file": "data/processed/WUE/data.xlsx",
+  "output_dir": "results/Paper_005/WUE",
   "output_file": "trend_analysis.xlsx",
   "detrend_output_file": "detrended_data.xlsx",
   "alpha": 0.05,

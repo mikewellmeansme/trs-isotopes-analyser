@@ -21,7 +21,7 @@ plt.rcParams['font.family'] = "Times New Roman"
 # ============================================================
 
 DEFAULT_CONFIG = {
-    "input_file": "FULL_DATA_(yak_tay_meteoru).xlsx",
+    "input_file": "data.xlsx",
     "output_dir": ".",
     "output_file": "trend_analysis.xlsx",
     "detrend_output_file": "detrended_data.xlsx",
