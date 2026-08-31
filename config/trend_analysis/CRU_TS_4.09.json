@@ -1,0 +1,22 @@
+{
+  "input_file": [
+      "data/processed/CRU_TS_4.09_cleaned/cld.csv",
+      "data/processed/CRU_TS_4.09_cleaned/pet.csv",
+      "data/processed/CRU_TS_4.09_cleaned/pre.csv",
+      "data/processed/CRU_TS_4.09_cleaned/rhm.csv",
+      "data/processed/CRU_TS_4.09_cleaned/tmp.csv",
+      "data/processed/CRU_TS_4.09_cleaned/vpd.csv"
+  ],
+  "output_dir": "results/Paper_005/CRU_TS_4.09_cleaned",
+  "output_file": "trend_analysis.xlsx",
+  "detrend_output_file": "detrended_data.xlsx",
+  "alpha": 0.05,
+  "smoothing_windows": [5, 10, 25],
+  "periods": {
+    "Industrial": [1901, 1998]
+  },
+  "time_mode": "monthly",
+  "year_column": "Year",
+  "month_column": "Month",
+  "ignore_columns": ["Day"]
+}

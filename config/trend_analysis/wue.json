@@ -1,0 +1,15 @@
+{
+  "input_file": "WUE_data.xlsx",
+  "output_dir": "results",
+  "output_file": "trend_analysis.xlsx",
+  "detrend_output_file": "detrended_data.xlsx",
+  "alpha": 0.05,
+  "smoothing_windows": [25, 50, 100],
+  "periods": {
+    "Pre-industrial": [1000, 1900],
+    "Post-industrial": [1901, 2020]
+  },
+  "time_mode": "annual",
+  "year_column": "Year",
+  "month_column": "Month"
+}
