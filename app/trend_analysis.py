@@ -2,6 +2,7 @@ import argparse
 import json
 import warnings
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,7 +52,7 @@ PERIODS = {
 # ============================================================
 
 
-def load_config(config_path):
+def load_config(config_path: str) -> Dict[str, Any]:
     if not Path(config_path).exists():
         raise FileNotFoundError(
             f"Config file not found: {config_path}"
@@ -82,7 +83,7 @@ def load_config(config_path):
     return cfg
 
 
-def normalize_input_files(input_spec):
+def normalize_input_files(input_spec: Any) -> List[str]:
     if isinstance(input_spec, str):
         return [input_spec]
 
@@ -101,7 +102,7 @@ def normalize_input_files(input_spec):
     )
 
 
-def read_input_table(path):
+def read_input_table(path: str) -> pd.DataFrame:
     p = Path(path)
     suffix = p.suffix.lower()
 
@@ -116,7 +117,11 @@ def read_input_table(path):
     )
 
 
-def load_and_validate_data(path, year_column, month_column=None):
+def load_and_validate_data(
+    path: str,
+    year_column: str,
+    month_column: Optional[str] = None
+) -> pd.DataFrame:
     df = read_input_table(path)
 
     if year_column not in df.columns:
@@ -132,7 +137,7 @@ def load_and_validate_data(path, year_column, month_column=None):
     return df
 
 
-def safe_sheet_name(name):
+def safe_sheet_name(name: str) -> str:
     cleaned = "".join(
         ch if ch not in ["\\", "/", "*", "?", ":", "[", "]"] else "_"
         for ch in name
@@ -140,11 +145,11 @@ def safe_sheet_name(name):
     return cleaned[:31]
 
 
-def source_name_from_path(path):
+def source_name_from_path(path: str) -> str:
     return Path(path).stem
 
 
-def build_output_paths(cfg, source_name):
+def build_output_paths(cfg: Dict[str, Any], source_name: str) -> Dict[str, Path]:
     output_dir = Path(cfg["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -160,7 +165,7 @@ def build_output_paths(cfg, source_name):
     }
 
 
-def detect_time_mode(df, cfg):
+def detect_time_mode(df: pd.DataFrame, cfg: Dict[str, Any]) -> str:
     mode = str(cfg["time_mode"]).lower()
 
     if mode in ["annual", "yearly"]:
@@ -177,14 +182,18 @@ def detect_time_mode(df, cfg):
     return "annual"
 
 
-def build_period_mask(df, year_column, periods):
+def build_period_mask(
+    df: pd.DataFrame,
+    year_column: str,
+    periods: Dict[str, Tuple[int, int]]
+) -> pd.Series:
     mask = pd.Series(False, index=df.index)
     for start_year, end_year in periods.values():
         mask = mask | df[year_column].between(start_year, end_year)
     return mask
 
 
-def apply_period_filter(df, cfg):
+def apply_period_filter(df: pd.DataFrame, cfg: Dict[str, Any]) -> pd.DataFrame:
     year_column = cfg["year_column"]
     if year_column not in df.columns:
         return df.copy()
@@ -192,7 +201,7 @@ def apply_period_filter(df, cfg):
     mask = build_period_mask(df, year_column, cfg["periods"])
     return df.loc[mask].copy()
 
-def mann_kendall_test(series):
+def mann_kendall_test(series: Sequence[float]) -> Dict[str, Any]:
 
     x = pd.Series(series).dropna()
 
@@ -223,7 +232,10 @@ def mann_kendall_test(series):
         }
 
 
-def sen_slope_ci(series, confidence=0.95):
+def sen_slope_ci(
+    series: Sequence[float],
+    confidence: float = 0.95
+) -> Tuple[float, float]:
     """
     Approximate confidence interval for Sen's slope
     using bootstrap resampling.
@@ -262,7 +274,7 @@ def sen_slope_ci(series, confidence=0.95):
 # TREND MODEL SELECTION
 # ============================================================
 
-def select_trend_model(data, column):
+def select_trend_model(data: pd.DataFrame, column: str) -> Dict[str, Any]:
     """
     Select the trend model once.
 
@@ -461,7 +473,7 @@ def select_trend_model(data, column):
 # SMOOTHING ANALYSIS
 # ============================================================
 
-def smoothing_analysis(data, column):
+def smoothing_analysis(data: pd.DataFrame, column: str) -> List[Dict[str, Any]]:
 
     valid = data[["Year", column]].dropna().copy()
 
@@ -526,7 +538,10 @@ def smoothing_analysis(data, column):
 # SMOOTHING SUMMARY
 # ============================================================
 
-def smoothing_summary(mk_result, smoothing_results):
+def smoothing_summary(
+    mk_result: Dict[str, Any],
+    smoothing_results: List[Dict[str, Any]]
+) -> str:
     raw_trend = mk_result["mk_trend"]
     raw_p = mk_result["mk_p"]
 
@@ -572,7 +587,11 @@ def smoothing_summary(mk_result, smoothing_results):
 # DETRENDING
 # ============================================================
 
-def detrend_using_selected_model(data, column, model_result):
+def detrend_using_selected_model(
+    data: pd.DataFrame,
+    column: str,
+    model_result: Dict[str, Any]
+) -> pd.Series:
 
     result = data[column].copy()
 
@@ -598,15 +617,20 @@ def detrend_using_selected_model(data, column, model_result):
 # CORE ANALYSIS
 # ============================================================
 
-def run_analysis_for_dataframe(df, cfg, source_name, month_value=None):
+def run_analysis_for_dataframe(
+    df: pd.DataFrame,
+    cfg: Dict[str, Any],
+    source_name: str,
+    month_value: Optional[Any] = None
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     year_column = cfg["year_column"]
 
     work_df = df.copy()
     work_df = work_df.sort_values(year_column).reset_index(drop=True)
     period_mask = build_period_mask(work_df, year_column, cfg["periods"])
 
-    summary = []
-    smoothing_details = []
+    summary: List[Dict[str, Any]] = []
+    smoothing_details: List[Dict[str, Any]] = []
 
     detrended_df = work_df.copy()
     trend_df = work_df.copy()
@@ -705,7 +729,7 @@ def run_analysis_for_dataframe(df, cfg, source_name, month_value=None):
 # CREATE DATAFRAMES
 # ============================================================
 
-def make_interpretation(row):
+def make_interpretation(row: pd.Series) -> str:
 
     trend = row["MK trend"]
     shape = row["Shape"]
@@ -730,7 +754,10 @@ def make_interpretation(row):
     )
 
 
-def finalize_result_tables(summary_df, smoothing_df):
+def finalize_result_tables(
+    summary_df: pd.DataFrame,
+    smoothing_df: pd.DataFrame
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     if not summary_df.empty:
         summary_df["Interpretation"] = summary_df.apply(
             make_interpretation,
@@ -762,7 +789,7 @@ def finalize_result_tables(summary_df, smoothing_df):
     return summary_df, smoothing_df
 
 
-def run_for_single_source(path, cfg):
+def run_for_single_source(path: str, cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
     source_name = source_name_from_path(path)
     year_column = cfg["year_column"]
     month_column = cfg["month_column"]
@@ -770,7 +797,7 @@ def run_for_single_source(path, cfg):
     df = load_and_validate_data(path, year_column)
     mode = detect_time_mode(df, cfg)
 
-    all_results = []
+    all_results: List[Dict[str, Any]] = []
 
     print(f"[INFO] Source: {source_name} | mode={mode}")
 
@@ -830,7 +857,38 @@ def run_for_single_source(path, cfg):
     return all_results
 
 
-def plot_result_set(result, cfg, output_plots_dir):
+def _trend_significance_for_column(
+    summary_df: pd.DataFrame,
+    column: str,
+    alpha: float
+) -> str:
+    col_rows = summary_df[summary_df["Variable"] == column].copy()
+    if col_rows.empty:
+        return "trend significance: unknown"
+
+    statuses: List[str] = []
+
+    for _, row in col_rows.iterrows():
+        period = row.get("Period", "period")
+        trend = row.get("MK trend", "")
+        p_val = row.get("MK p-value", np.nan)
+
+        is_sig = (
+            trend in ["increasing", "decreasing"]
+            and pd.notna(p_val)
+            and float(p_val) < alpha
+        )
+        state = "significant" if is_sig else "not significant"
+        statuses.append(f"{period}: {state}")
+
+    return " | ".join(statuses)
+
+
+def plot_result_set(
+    result: Dict[str, Any],
+    cfg: Dict[str, Any],
+    output_plots_dir: Path
+) -> None:
     ignored_columns = set(cfg.get("ignore_columns", ["Day"]))
 
     year_column = cfg["year_column"]
@@ -884,11 +942,19 @@ def plot_result_set(result, cfg, output_plots_dir):
         axes[1].legend(loc="best")
         axes[1].grid(alpha=0.25)
 
+        significance_info = _trend_significance_for_column(
+            result["summary"],
+            column,
+            float(cfg["alpha"])
+        )
+
         if month is None or pd.isna(month):
-            fig.suptitle(f"{column}")
+            fig.suptitle(f"{column} | {significance_info}")
             png_name = f"{column}.png"
         else:
-            fig.suptitle(f"month={month} | {column}")
+            fig.suptitle(
+                f"month={month} | {column} | {significance_info}"
+            )
             png_name = f"M{month}__{column}.png"
 
         safe_name = "".join(
@@ -901,11 +967,15 @@ def plot_result_set(result, cfg, output_plots_dir):
         plt.close(fig)
 
 
-def write_outputs_for_source(all_results, cfg, source_name):
+def write_outputs_for_source(
+    all_results: List[Dict[str, Any]],
+    cfg: Dict[str, Any],
+    source_name: str
+) -> Dict[str, Path]:
     paths = build_output_paths(cfg, source_name)
 
-    summary_tables = []
-    smoothing_tables = []
+    summary_tables: List[pd.DataFrame] = []
+    smoothing_tables: List[pd.DataFrame] = []
 
     with pd.ExcelWriter(paths["summary"], engine="openpyxl") as writer:
         for result in all_results:
@@ -943,8 +1013,8 @@ def write_outputs_for_source(all_results, cfg, source_name):
         all_smoothing.to_excel(writer, sheet_name="Smoothing_all", index=False)
 
     with pd.ExcelWriter(paths["detrend"], engine="openpyxl") as writer:
-        detrended_tables = []
-        trend_tables = []
+        detrended_tables: List[pd.DataFrame] = []
+        trend_tables: List[pd.DataFrame] = []
 
         for result in all_results:
             source = result["source"]
@@ -993,7 +1063,7 @@ def write_outputs_for_source(all_results, cfg, source_name):
     return paths
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Trend analysis for annual or monthly isotope tables "
@@ -1008,7 +1078,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     global ALPHA, SMOOTHING_WINDOWS, PERIODS
 
     args = parse_args()
