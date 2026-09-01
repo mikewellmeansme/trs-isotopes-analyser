@@ -1,0 +1,28 @@
+{
+  "wue_file": "data/processed/isotopes/iWUE_CO2_1901-1998.csv",
+  "climate_raw_dir": "data/processed/CRU_TS_4.09",
+  "climate_detrended_dir": "results/Paper_005/CRU_TS_4.09",
+  "output_dir": "results/Paper_005/correlations",
+  "clim_indices": ["cld", "pet", "pre", "tmp", "rhm", "vpd"],
+  "sites": ["CAN", "YAK", "TAY", "FIN", "SWE", "NOR", "ALT", "LOT", "PAK"],
+  "sites_sorted": ["YAK", "TAY", "CAN", "FIN", "SWE", "NOR", "ALT", "PAK", "LOT"],
+  "stat_index_full_name": {
+    "tmp": "Temperature",
+    "pre": "Precipitation",
+    "rhm": "Relative Humidity",
+    "vpd": "Vapour pressure deficit",
+    "cld": "Cloud cover",
+    "pet": "Potential evapotranspiration"
+  },
+  "year_column": "Year",
+  "month_column": "Month",
+  "wue_suffix": "_WUE",
+  "p_threshold": 0.01,
+  "font_size": 20,
+  "font_family": "Times New Roman",
+  "excel_raw_name": "all_correlation_results_with_trends.xlsx",
+  "excel_detrended_name": "all_correlation_results_detrended.xlsx",
+  "heatmap_prefix_raw": "with_trends",
+  "heatmap_prefix_detrended": "detrended",
+  "heatmap_dpi": 300
+}
