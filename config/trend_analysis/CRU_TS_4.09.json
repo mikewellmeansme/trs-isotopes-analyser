@@ -9,7 +9,6 @@
   ],
   "output_dir": "results/Paper_005/CRU_TS_4.09",
   "output_file": "trend_analysis.xlsx",
-  "detrend_output_file": "detrended_data.xlsx",
   "alpha": 0.05,
   "smoothing_windows": [5, 10, 25],
   "periods": {

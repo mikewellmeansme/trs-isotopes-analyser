@@ -24,7 +24,8 @@ DEFAULT_CONFIG = {
     "input_file": "data.xlsx",
     "output_dir": ".",
     "output_file": "trend_analysis.xlsx",
-    "detrend_output_file": "detrended_data.xlsx",
+    "detrend_output_file": "detrended_data.csv",
+    "trend_output_file": "trend_data.csv",
     "alpha": 0.05,
     "smoothing_windows": [25, 50, 100],
     "periods": {
@@ -155,12 +156,14 @@ def build_output_paths(cfg: Dict[str, Any], source_name: str) -> Dict[str, Path]
 
     summary_name = f"{source_name}__{cfg['output_file']}"
     detrend_name = f"{source_name}__{cfg['detrend_output_file']}"
+    trend_name = f"{source_name}__{cfg.get('trend_output_file', 'trend_data.csv')}"
     plots_dir = output_dir / f"{source_name}__plots"
     plots_dir.mkdir(parents=True, exist_ok=True)
 
     return {
         "summary": output_dir / summary_name,
-        "detrend": output_dir / detrend_name,
+        "detrend_csv": output_dir / detrend_name,
+        "trend_csv": output_dir / trend_name,
         "plots_dir": plots_dir
     }
 
@@ -1012,53 +1015,46 @@ def write_outputs_for_source(
         all_summary.to_excel(writer, sheet_name="Summary_all", index=False)
         all_smoothing.to_excel(writer, sheet_name="Smoothing_all", index=False)
 
-    with pd.ExcelWriter(paths["detrend"], engine="openpyxl") as writer:
-        detrended_tables: List[pd.DataFrame] = []
-        trend_tables: List[pd.DataFrame] = []
+    detrended_tables: List[pd.DataFrame] = []
+    trend_tables: List[pd.DataFrame] = []
 
-        for result in all_results:
-            source = result["source"]
-            month = result["month"]
+    for result in all_results:
+        month = result["month"]
 
-            detrended_df = result["detrended"].copy()
-            trend_df = result["trend"].copy()
+        detrended_df = result["detrended"].copy()
+        trend_df = result["trend"].copy()
 
-            detrended_df.insert(0, "Source", source)
-            trend_df.insert(0, "Source", source)
-
-            if month is not None and not pd.isna(month):
-                if "Month" in detrended_df.columns:
-                    detrended_df["Month"] = month
-                else:
-                    detrended_df.insert(1, "Month", month)
-
-                if "Month" in trend_df.columns:
-                    trend_df["Month"] = month
-                else:
-                    trend_df.insert(1, "Month", month)
-
-            detrended_tables.append(detrended_df)
-            trend_tables.append(trend_df)
-
-            if month is None or pd.isna(month):
-                detr_sheet = safe_sheet_name(f"Detr_{source}")
-                trend_sheet = safe_sheet_name(f"Trend_{source}")
+        if month is not None and not pd.isna(month):
+            if "Month" in detrended_df.columns:
+                detrended_df["Month"] = month
             else:
-                detr_sheet = safe_sheet_name(f"D_{source}_M{month}")
-                trend_sheet = safe_sheet_name(f"T_{source}_M{month}")
+                detrended_df.insert(1, "Month", month)
 
-            detrended_df.to_excel(writer, sheet_name=detr_sheet, index=False)
-            trend_df.to_excel(writer, sheet_name=trend_sheet, index=False)
+            if "Month" in trend_df.columns:
+                trend_df["Month"] = month
+            else:
+                trend_df.insert(1, "Month", month)
 
-        if detrended_tables:
-            detrended_all = pd.concat(detrended_tables, ignore_index=True)
-            trend_all = pd.concat(trend_tables, ignore_index=True)
-        else:
-            detrended_all = pd.DataFrame()
-            trend_all = pd.DataFrame()
+        detrended_tables.append(detrended_df)
+        trend_tables.append(trend_df)
 
-        detrended_all.to_excel(writer, sheet_name="Detrended_all", index=False)
-        trend_all.to_excel(writer, sheet_name="Trend_all", index=False)
+    if detrended_tables:
+        detrended_all = pd.concat(detrended_tables, ignore_index=True)
+        trend_all = pd.concat(trend_tables, ignore_index=True)
+
+        order_columns = [
+            c for c in [cfg["year_column"], cfg["month_column"]]
+            if c in detrended_all.columns
+        ]
+        if order_columns:
+            detrended_all = detrended_all.sort_values(order_columns).reset_index(drop=True)
+            trend_all = trend_all.sort_values(order_columns).reset_index(drop=True)
+    else:
+        detrended_all = pd.DataFrame()
+        trend_all = pd.DataFrame()
+
+    detrended_all.to_csv(paths["detrend_csv"], index=False)
+    trend_all.to_csv(paths["trend_csv"], index=False)
 
     return paths
 
@@ -1107,7 +1103,8 @@ def main() -> None:
         paths = write_outputs_for_source(source_results, cfg, source_name)
 
         print(f"[INFO] Summary saved: {paths['summary']}")
-        print(f"[INFO] Detrended saved: {paths['detrend']}")
+        print(f"[INFO] Detrended CSV saved: {paths['detrend_csv']}")
+        print(f"[INFO] Trend CSV saved: {paths['trend_csv']}")
         print(f"[INFO] Plots dir: {paths['plots_dir']}")
 
     print("[INFO] Done.")

@@ -2,7 +2,6 @@
   "input_file": "data/processed/WUE/data.xlsx",
   "output_dir": "results/Paper_005/WUE",
   "output_file": "trend_analysis.xlsx",
-  "detrend_output_file": "detrended_data.xlsx",
   "alpha": 0.05,
   "smoothing_windows": [25, 50, 100],
   "periods": {
