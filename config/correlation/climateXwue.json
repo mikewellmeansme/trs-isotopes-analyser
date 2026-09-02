@@ -1,7 +1,9 @@
 {
   "wue_file": "data/processed/isotopes/iWUE_CO2_1901-1998.csv",
+  "wue_detrended_file": "results/Paper_005/WUE/data__detrended_data.csv",
   "climate_raw_dir": "data/processed/CRU_TS_4.09",
   "climate_detrended_dir": "results/Paper_005/CRU_TS_4.09",
+  "correlation_period": [1901, 1998],
   "output_dir": "results/Paper_005/correlations",
   "clim_indices": ["cld", "pet", "pre", "tmp", "rhm", "vpd"],
   "sites": ["CAN", "YAK", "TAY", "FIN", "SWE", "NOR", "ALT", "LOT", "PAK"],

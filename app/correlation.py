@@ -17,8 +17,10 @@ warnings.filterwarnings("ignore")
 
 DEFAULT_CONFIG: Dict[str, Any] = {
 	"wue_file": "data/processed/isotopes/iWUE_CO2_1901-1998.csv",
+	"wue_detrended_file": "results/Paper_005/WUE/data__detrended_data.csv",
 	"climate_raw_dir": "data/processed/CRU_TS_4.09",
 	"climate_detrended_dir": "results/Paper_005/CRU_TS_4.09",
+	"correlation_period": [1901, 1998],
 	"output_dir": "results/Paper_005/correlations",
 	"clim_indices": ["cld", "pet", "pre", "tmp", "rhm", "vpd"],
 	"sites": ["CAN", "YAK", "TAY", "FIN", "SWE", "NOR", "ALT", "LOT", "PAK"],
@@ -99,7 +101,23 @@ def load_config(config_path: str) -> Dict[str, Any]:
 	cfg["p_threshold"] = float(cfg["p_threshold"])
 	cfg["heatmap_dpi"] = int(cfg["heatmap_dpi"])
 	cfg["font_size"] = int(cfg["font_size"])
+
+	period = cfg.get("correlation_period", [1901, 1998])
+	if not isinstance(period, list) or len(period) != 2:
+		raise ValueError("correlation_period must be a list: [start_year, end_year]")
+	cfg["correlation_period"] = [int(period[0]), int(period[1])]
 	return cfg
+
+
+def filter_by_year_period(
+	df: pd.DataFrame,
+	year_column: str,
+	period: Sequence[int]
+) -> pd.DataFrame:
+	start_year, end_year = int(period[0]), int(period[1])
+	if year_column not in df.columns:
+		raise ValueError(f"Column '{year_column}' not found in dataframe.")
+	return df.loc[df[year_column].between(start_year, end_year)].copy()
 
 
 def ensure_output_dirs(cfg: Dict[str, Any]) -> Path:
@@ -309,17 +327,41 @@ def main() -> None:
 
 	print("[INFO] Reading input datasets...")
 	wue_df = pd.read_csv(cfg["wue_file"])
+	wue_detrended_df = pd.read_csv(cfg["wue_detrended_file"])
 	climate_raw = read_climate_data(cfg["clim_indices"], cfg["climate_raw_dir"])
 	climate_detrended = read_detrended_climate_data(
 		cfg["clim_indices"],
 		cfg["climate_detrended_dir"]
 	)
 
+	# Keep only years inside correlation_period (inclusive).
+	wue_df = filter_by_year_period(
+		wue_df,
+		cfg["year_column"],
+		cfg["correlation_period"]
+	)
+	wue_detrended_df = filter_by_year_period(
+		wue_detrended_df,
+		cfg["year_column"],
+		cfg["correlation_period"]
+	)
+	for index in cfg["clim_indices"]:
+		climate_raw[index] = filter_by_year_period(
+			climate_raw[index],
+			cfg["year_column"],
+			cfg["correlation_period"]
+		)
+		climate_detrended[index] = filter_by_year_period(
+			climate_detrended[index],
+			cfg["year_column"],
+			cfg["correlation_period"]
+		)
+
 	print("[INFO] Computing correlations for raw climate data...")
 	rs_raw, ps_raw = run_correlation_set(wue_df, climate_raw, cfg)
 
 	print("[INFO] Computing correlations for detrended climate data...")
-	rs_detr, ps_detr = run_correlation_set(wue_df, climate_detrended, cfg)
+	rs_detr, ps_detr = run_correlation_set(wue_detrended_df, climate_detrended, cfg)
 
 	raw_excel = output_dir / cfg["excel_raw_name"]
 	detr_excel = output_dir / cfg["excel_detrended_name"]
