@@ -24,7 +24,9 @@
   "font_family": "Times New Roman",
   "excel_raw_name": "all_correlation_results_with_trends.xlsx",
   "excel_detrended_name": "all_correlation_results_detrended.xlsx",
+	"excel_first_diff_name": "all_correlation_results_first_diff.xlsx",
   "heatmap_prefix_raw": "with_trends",
   "heatmap_prefix_detrended": "detrended",
+	"heatmap_prefix_first_diff": "first_diff",
   "heatmap_dpi": 300
 }

@@ -41,8 +41,10 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 	"font_family": "Times New Roman",
 	"excel_raw_name": "all_correlation_results_with_trends.xlsx",
 	"excel_detrended_name": "all_correlation_results_detrended.xlsx",
+	"excel_first_diff_name": "all_correlation_results_first_diff.xlsx",
 	"heatmap_prefix_raw": "with_trends",
 	"heatmap_prefix_detrended": "detrended",
+	"heatmap_prefix_first_diff": "first_diff",
 	"heatmap_dpi": 300,
 	"heatmap_kwargs": {
 		'cmap': "seismic",
@@ -150,13 +152,20 @@ def dropna_pearsonr(x: pd.Series, y: pd.Series) -> Tuple[float, float]:
 	return float(r), float(p)
 
 
+def first_order_difference_corr(x: pd.Series, y: pd.Series) -> Tuple[float, float]:
+	dx = x.diff()
+	dy = y.diff()
+	return dropna_pearsonr(dx, dy)
+
+
 def compute_monthly_correlations(
 	wue_df: pd.DataFrame,
 	clim_df: pd.DataFrame,
 	sites_sorted: Sequence[str],
 	year_column: str,
 	month_column: str,
-	wue_suffix: str
+	wue_suffix: str,
+	method: str = "pearson"
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
 	rs: Dict[str, List[float]] = {site: [] for site in sites_sorted}
 	ps: Dict[str, List[float]] = {site: [] for site in sites_sorted}
@@ -173,7 +182,13 @@ def compute_monthly_correlations(
 			if wue_col not in merged.columns or clim_col not in merged.columns:
 				r, p = np.nan, np.nan
 			else:
-				r, p = dropna_pearsonr(merged[wue_col], merged[clim_col])
+				if method == "first_diff":
+					r, p = first_order_difference_corr(
+						merged[wue_col],
+						merged[clim_col]
+					)
+				else:
+					r, p = dropna_pearsonr(merged[wue_col], merged[clim_col])
 
 			rs[site].append(r)
 			ps[site].append(p)
@@ -297,7 +312,8 @@ def save_heatmaps(
 def run_correlation_set(
 	wue_df: pd.DataFrame,
 	climate_data: Dict[str, pd.DataFrame],
-	cfg: Dict[str, Any]
+	cfg: Dict[str, Any],
+	method: str = "pearson"
 ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, pd.DataFrame]]:
 	rs: Dict[str, pd.DataFrame] = {}
 	ps: Dict[str, pd.DataFrame] = {}
@@ -309,7 +325,8 @@ def run_correlation_set(
 			sites_sorted=cfg["sites_sorted"],
 			year_column=cfg["year_column"],
 			month_column=cfg["month_column"],
-			wue_suffix=cfg["wue_suffix"]
+			wue_suffix=cfg["wue_suffix"],
+			method=method
 		)
 		rs[index] = r_df
 		ps[index] = p_df
@@ -358,19 +375,41 @@ def main() -> None:
 		)
 
 	print("[INFO] Computing correlations for raw climate data...")
-	rs_raw, ps_raw = run_correlation_set(wue_df, climate_raw, cfg)
+	rs_raw, ps_raw = run_correlation_set(wue_df, climate_raw, cfg, method="pearson")
 
 	print("[INFO] Computing correlations for detrended climate data...")
-	rs_detr, ps_detr = run_correlation_set(wue_detrended_df, climate_detrended, cfg)
+	rs_detr, ps_detr = run_correlation_set(
+		wue_detrended_df,
+		climate_detrended,
+		cfg,
+		method="pearson"
+	)
+
+	print("[INFO] Computing first-order-difference correlations from raw data...")
+	rs_first_diff, ps_first_diff = run_correlation_set(
+		wue_df,
+		climate_raw,
+		cfg,
+		method="first_diff"
+	)
 
 	raw_excel = output_dir / cfg["excel_raw_name"]
 	detr_excel = output_dir / cfg["excel_detrended_name"]
+	first_diff_excel = output_dir / cfg["excel_first_diff_name"]
 
 	print(f"[INFO] Saving tables: {raw_excel}")
 	save_correlation_excel(rs_raw, ps_raw, raw_excel, cfg["p_threshold"])
 
 	print(f"[INFO] Saving tables: {detr_excel}")
 	save_correlation_excel(rs_detr, ps_detr, detr_excel, cfg["p_threshold"])
+
+	print(f"[INFO] Saving tables: {first_diff_excel}")
+	save_correlation_excel(
+		rs_first_diff,
+		ps_first_diff,
+		first_diff_excel,
+		cfg["p_threshold"]
+	)
 
 	title_map = cfg["stat_index_full_name"]
 	print("[INFO] Saving heatmaps (raw)...")
@@ -390,6 +429,16 @@ def main() -> None:
 		cfg,
 		title_map,
 		cfg["heatmap_prefix_detrended"],
+		output_dir
+	)
+
+	print("[INFO] Saving heatmaps (first-order-difference)...")
+	save_heatmaps(
+		rs_first_diff,
+		ps_first_diff,
+		cfg,
+		title_map,
+		cfg["heatmap_prefix_first_diff"],
 		output_dir
 	)
 
