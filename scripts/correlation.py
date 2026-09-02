@@ -106,6 +106,8 @@ def load_config(config_path: str) -> Dict[str, Any]:
 		with open(path, "r", encoding="utf-8") as f:
 			user_cfg = json.load(f)
 		cfg.update(user_cfg)
+	else:
+		raise FileNotFoundError(f"Config {path} not found!")
 
 	cfg["output_dir"] = str(cfg["output_dir"])
 	cfg["p_threshold"] = float(cfg["p_threshold"])
