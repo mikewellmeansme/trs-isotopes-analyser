@@ -414,11 +414,16 @@ def build_window_periods(
 		return periods
 
 	loc_start = start_year
+	is_first_window = True
 	while loc_start <= end_year:
-		loc_end = min(loc_start + window_size, end_year)
+		if is_first_window:
+			loc_end = min(loc_start + window_size, end_year)
+		else:
+			loc_end = min(loc_start + window_size - 1, end_year)
 		label = f"{loc_start}-{loc_end}"
 		periods.append((label, [loc_start, loc_end]))
 		loc_start = loc_end + 1
+		is_first_window = False
 
 	return periods
 
