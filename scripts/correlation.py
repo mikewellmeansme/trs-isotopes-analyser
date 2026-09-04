@@ -151,6 +151,17 @@ def ensure_output_dirs(cfg: Dict[str, Any]) -> Path:
 	return output_dir
 
 
+def ensure_mode_dirs(base_output_dir: Path) -> Dict[str, Path]:
+	mode_dirs = {
+		"raw": base_output_dir / "raw",
+		"detrended": base_output_dir / "detrended",
+		"first_diff": base_output_dir / "first_diff"
+	}
+	for path in mode_dirs.values():
+		path.mkdir(parents=True, exist_ok=True)
+	return mode_dirs
+
+
 def read_climate_data(clim_indices: Sequence[str], folder: str) -> Dict[str, pd.DataFrame]:
 	data: Dict[str, pd.DataFrame] = {}
 	for index in clim_indices:
@@ -485,6 +496,7 @@ def main() -> None:
 	plt.rcParams["font.family"] = cfg["font_family"]
 
 	output_dir = ensure_output_dirs(cfg)
+	mode_dirs = ensure_mode_dirs(output_dir)
 
 	print("[INFO] Reading input datasets...")
 	wue_df = pd.read_csv(cfg["wue_file"])
@@ -545,10 +557,10 @@ def main() -> None:
 		method="first_diff"
 	)
 
-	raw_excel = output_dir / cfg["excel_raw_name"]
-	detr_excel = output_dir / cfg["excel_detrended_name"]
-	first_diff_excel = output_dir / cfg["excel_first_diff_name"]
-	wue_period_corr_excel = output_dir / cfg["wue_periods_output_name"]
+	raw_excel = mode_dirs["raw"] / cfg["excel_raw_name"]
+	detr_excel = mode_dirs["detrended"] / cfg["excel_detrended_name"]
+	first_diff_excel = mode_dirs["first_diff"] / cfg["excel_first_diff_name"]
+	wue_period_corr_excel = mode_dirs["detrended"] / cfg["wue_periods_output_name"]
 
 	print(f"[INFO] Saving tables: {wue_period_corr_excel}")
 	save_correlation_excel(
@@ -580,7 +592,7 @@ def main() -> None:
 		cfg,
 		title_map,
 		cfg["heatmap_prefix_raw"],
-		output_dir
+		mode_dirs["raw"]
 	)
 
 	print("[INFO] Saving heatmaps (detrended)...")
@@ -590,7 +602,7 @@ def main() -> None:
 		cfg,
 		title_map,
 		cfg["heatmap_prefix_detrended"],
-		output_dir
+		mode_dirs["detrended"]
 	)
 
 	print("[INFO] Saving heatmaps (first-order-difference)...")
@@ -600,7 +612,7 @@ def main() -> None:
 		cfg,
 		title_map,
 		cfg["heatmap_prefix_first_diff"],
-		output_dir
+		mode_dirs["first_diff"]
 	)
 
 	print("[INFO] Done.")
