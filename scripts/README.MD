@@ -1,22 +1,24 @@
 # Data analysis scripts
 
-The raw annual (iWUE, CO2) and monthly (CRU TS 4.09 climate) time series were used to perform robust trend decomposition for each site, variable and selected period (Pre-industrial: 1000-1900; Industrial: 1901-2020). For each series, a modified Mann-Kendall [1, 2] test was used to determine the presence of a trend, Sen’s slope [3,4] (with confidence interval) was estimated to quantify the trend magnitude, and linear vs quadratic trend shape was selected based on significance and Akaike's information criteria [5,6]. The selected model was then used consistently to generate fitted trend values and detrended residuals.
+The raw annual (iWUE, CI/CA, CO2) and monthly (CRU TS 4.09 climate) time series were used to perform robust trend decomposition for each site, variable and selected period (Pre-industrial: 1000-1900; Industrial: 1901-2020). For each series, a modified Mann-Kendall [1, 2] test was used to determine the presence of a trend, Sen’s slope [3,4] (with confidence interval) was estimated to quantify the trend magnitude, and linear vs quadratic trend shape was selected based on significance and Akaike's information criteria [5,6]. The selected model was then used consistently to generate fitted trend values and detrended residuals.
 
-Afterwards, iWUE was correlated with climate data using three complementary approaches: raw climate vs raw iWUE, detrended climate vs detrended iWUE, and first-order differences of the raw series. Correlations were calculated month-by-month (1-12) for each site within the configured year window (1901-1998), producing Pearson correlation coefficients (r) and p-values (p), formatted summary tables, and heatmaps with significance masking.
+Afterwards, iWUE and CI/CA series were correlated with climate data using three complementary approaches: raw climate vs raw iWUE (raw CI/CA), detrended climate vs detrended iWUE (detrended CI/CA), and first-order differences of the raw series. Correlations were calculated month-by-month (1-12) for each site within the configured year window (1901-1998), producing Pearson correlation coefficients (r) and p-values (p), formatted summary tables, and heatmaps with significance masking.
 
 All input/output paths and analysis settings (periods, ignored columns, thresholds, file names) are controlled from JSON configs (`config/correlation` and `config/trend_analysis`).
 
-iWUE data are currently available only upon direct request to the authors. 
+iWUE and CI/CA data are currently available only upon direct request to the authors. 
 
 To perform trend analysis use:
 ```{bash}
 python scripts/trend_analysis.py --config config/trend_analysis/WUE.json
+python scripts/trend_analysis.py --config config/trend_analysis/CI_CA.json
 python scripts/trend_analysis.py --config config/trend_analysis/CRU_TS_4.09.json
 ```
 
 To perform correlation analysis use:
 ```{bash}
 python scripts/correlation.py --config config/climateXwue.json
+python scripts/correlation.py --config config/climateXci_ca.json
 ```
 
 Sources:
