@@ -1,8 +1,8 @@
 {
   "wue_file": "data/processed/WUE/ci_ca_2026_02_09.csv",
-  "wue_detrended_file": "results/Paper_005/CI_CA/ci_ca_2026_02_09__detrended_data.csv",
+  "wue_detrended_file": "results/Paper_005/trends/CI_CA_trends (1000-2020)/ci_ca_2026_02_09__detrended_data.csv",
   "climate_raw_dir": "data/processed/CRU_TS_4.09",
-  "climate_detrended_dir": "results/Paper_005/CRU_TS_4.09",
+  "climate_detrended_dir": "results/Paper_005/trends/CRU_TS_4.09_trends (1901-1998)",
   "correlation_period": [1901, 1998],
   "output_dir": "results/Paper_005/CI_CA_correlations",
   "clim_indices": ["cld", "pet", "pre", "tmp", "rhm", "vpd"],

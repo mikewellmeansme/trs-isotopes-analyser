@@ -1,11 +1,11 @@
 {
-  "input_file": "data/processed/WUE/data.xlsx",
-  "output_dir": "results/Paper_005/trends/WUE_trends (1900-2020)",
+  "input_file": "data/processed/WUE/ci_ca_2026_02_09.xlsx",
+  "output_dir": "results/Paper_005/trends/CI_CA_long_trends (500-2020)",
   "output_file": "trend_analysis.xlsx",
   "alpha": 0.05,
   "smoothing_windows": [25, 50, 100],
   "periods": {
-    "Pre-industrial": [1000, 1900],
+    "Pre-industrial": [500, 1900],
     "Industrial": [1901, 2020]
   },
   "time_mode": "annual",

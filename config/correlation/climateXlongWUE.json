@@ -1,13 +1,13 @@
 {
-  "wue_file": "data/processed/WUE/data.csv",
-  "wue_detrended_file": "results/Paper_005/trends/WUE_trends (1900-2020)/data__detrended_data.csv",
+  "wue_file": "data/processed/WUE/iWUE_HL.csv",
+  "wue_detrended_file": "results/Paper_005/long_WUE_trends/iWUE_HL__detrended_data.csv",
   "climate_raw_dir": "data/processed/CRU_TS_4.09",
   "climate_detrended_dir": "results/Paper_005/trends/CRU_TS_4.09_trends (1901-1998)",
   "correlation_period": [1901, 1998],
-  "output_dir": "results/Paper_005/iWUE_correlations",
+  "output_dir": "results/Paper_005/long_WUE_correlations",
   "clim_indices": ["cld", "pet", "pre", "tmp", "rhm", "vpd"],
-  "sites": ["CAN", "YAK", "TAY", "FIN", "SWE", "NOR", "ALT", "LOT", "PAK"],
-  "sites_sorted": ["YAK", "TAY", "CAN", "FIN", "SWE", "NOR", "ALT", "PAK", "LOT"],
+  "sites": ["YAK", "TAY", "ALT"],
+  "sites_sorted": ["YAK", "TAY","ALT"],
   "stat_index_full_name": {
     "tmp": "Temperature",
     "pre": "Precipitation",
@@ -28,5 +28,12 @@
   "heatmap_prefix_raw": "with_trends",
   "heatmap_prefix_detrended": "detrended",
 	"heatmap_prefix_first_diff": "first_diff",
-  "heatmap_dpi": 300
+  "heatmap_dpi": 300,
+  "wue_periods": {
+		"Pre-industrial": [500, 1900],
+		"Industrial": [1901, 1998]
+	},
+	"wue_window_start_year": 500,
+	"wue_window_size": 100,
+	"wue_window_end_year": 1998
 }

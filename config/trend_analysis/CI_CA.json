@@ -1,6 +1,6 @@
 {
   "input_file": "data/processed/WUE/ci_ca_2026_02_09.xlsx",
-  "output_dir": "results/Paper_005/CI_CA",
+  "output_dir": "results/Paper_005/trends/CI_CA_trends (1900-2020)",
   "output_file": "trend_analysis.xlsx",
   "alpha": 0.05,
   "smoothing_windows": [25, 50, 100],

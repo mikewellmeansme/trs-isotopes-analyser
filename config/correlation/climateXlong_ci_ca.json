@@ -1,10 +1,10 @@
 {
-  "wue_file": "data/processed/WUE/data.csv",
-  "wue_detrended_file": "results/Paper_005/trends/WUE_trends (1900-2020)/data__detrended_data.csv",
+  "wue_file": "data/processed/WUE/ci_ca_2026_02_09.csv",
+  "wue_detrended_file": "results/Paper_005/long_CI_CA_trends/ci_ca_2026_02_09__detrended_data.csv",
   "climate_raw_dir": "data/processed/CRU_TS_4.09",
   "climate_detrended_dir": "results/Paper_005/trends/CRU_TS_4.09_trends (1901-1998)",
   "correlation_period": [1901, 1998],
-  "output_dir": "results/Paper_005/iWUE_correlations",
+  "output_dir": "results/Paper_005/long_CI_CA_correlations",
   "clim_indices": ["cld", "pet", "pre", "tmp", "rhm", "vpd"],
   "sites": ["CAN", "YAK", "TAY", "FIN", "SWE", "NOR", "ALT", "LOT", "PAK"],
   "sites_sorted": ["YAK", "TAY", "CAN", "FIN", "SWE", "NOR", "ALT", "PAK", "LOT"],
@@ -18,15 +18,23 @@
   },
   "year_column": "Year",
   "month_column": "Month",
-  "wue_suffix": "_WUE",
+  "wue_suffix": "_CI_CA",
   "p_threshold": 0.01,
   "font_size": 20,
   "font_family": "Times New Roman",
   "excel_raw_name": "all_correlation_results_with_trends.xlsx",
   "excel_detrended_name": "all_correlation_results_detrended.xlsx",
 	"excel_first_diff_name": "all_correlation_results_first_diff.xlsx",
+  "wue_periods_output_name": "ci_ca_detrended_period_correlations.xlsx",
   "heatmap_prefix_raw": "with_trends",
   "heatmap_prefix_detrended": "detrended",
 	"heatmap_prefix_first_diff": "first_diff",
-  "heatmap_dpi": 300
+  "heatmap_dpi": 300,
+  "wue_periods": {
+		"Pre-industrial": [500, 1900],
+		"Industrial": [1901, 1998]
+	},
+	"wue_window_start_year": 500,
+	"wue_window_size": 100,
+	"wue_window_end_year": 1998
 }

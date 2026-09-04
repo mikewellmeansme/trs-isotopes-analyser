@@ -7,7 +7,7 @@
       "data/processed/CRU_TS_4.09/tmp.csv",
       "data/processed/CRU_TS_4.09/vpd.csv"
   ],
-  "output_dir": "results/Paper_005/CRU_TS_4.09",
+  "output_dir": "results/Paper_005/trends/CRU_TS_4.09_trends (1901-1998)",
   "output_file": "trend_analysis.xlsx",
   "alpha": 0.05,
   "smoothing_windows": [5, 10, 25],
