@@ -16,20 +16,20 @@ from scipy.stats import pearsonr
 warnings.filterwarnings("ignore")
 
 DEFAULT_CONFIG: Dict[str, Any] = {
-	"wue_file": "data/processed/WUE/data.csv",
-	"wue_detrended_file": "results/Paper_005/WUE/data__detrended_data.csv",
-	"wue_periods": {
+	"index_file": None,
+	"index_detrended_file": None,
+	"index_periods": {
 		"Pre-industrial": [1000, 1900],
 		"Industrial": [1901, 1998]
 	},
-	"wue_window_start_year": 1000,
-	"wue_window_size": 100,
-	"wue_window_end_year": 1998,
-	"wue_periods_output_name": "wue_detrended_period_correlations.xlsx",
-	"climate_raw_dir": "data/processed/CRU_TS_4.09",
-	"climate_detrended_dir": "results/Paper_005/CRU_TS_4.09",
+	"index_window_start_year": 1000,
+	"index_window_size": 100,
+	"index_window_end_year": 1998,
+	"index_periods_output_name": "index_detrended_period_correlations.xlsx",
+	"climate_raw_dir": None,
+	"climate_detrended_dir": None,
 	"correlation_period": [1901, 1998],
-	"output_dir": "results/Paper_005/correlations",
+	"output_dir": None,
 	"clim_indices": ["cld", "pet", "pre", "tmp", "rhm", "vpd"],
 	"sites": ["CAN", "YAK", "TAY", "FIN", "SWE", "NOR", "ALT", "LOT", "PAK"],
 	"sites_sorted": ["YAK", "TAY", "CAN", "FIN", "SWE", "NOR", "ALT", "PAK", "LOT"],
@@ -43,13 +43,13 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 	},
 	"year_column": "Year",
 	"month_column": "Month",
-	"wue_suffix": "_WUE",
+	"index_suffix": "_WUE",
 	"p_threshold": 0.01,
 	"font_size": 20,
 	"font_family": "Times New Roman",
-	"excel_raw_name": "all_correlation_results_with_trends.xlsx",
-	"excel_detrended_name": "all_correlation_results_detrended.xlsx",
-	"excel_first_diff_name": "all_correlation_results_first_diff.xlsx",
+	"excel_raw_name": "correlations_with_trends.xlsx",
+	"excel_detrended_name": "correlations_detrended.xlsx",
+	"excel_first_diff_name": "correlations_first_diff.xlsx",
 	"heatmap_prefix_raw": "with_trends",
 	"heatmap_prefix_detrended": "detrended",
 	"heatmap_prefix_first_diff": "first_diff",
@@ -88,11 +88,11 @@ class Months(Enum):
 
 def parse_args() -> argparse.Namespace:
 	parser = argparse.ArgumentParser(
-		description="WUE-climate monthly correlation analysis (raw and detrended)."
+		description="Index-climate monthly correlation analysis (raw and detrended)."
 	)
 	parser.add_argument(
 		"--config",
-		default="config/correlation/wue_correlation.json",
+		default="config/correlation/index_correlation.json",
 		help="Path to JSON config file."
 	)
 	return parser.parse_args()
@@ -119,18 +119,18 @@ def load_config(config_path: str) -> Dict[str, Any]:
 		raise ValueError("correlation_period must be a list: [start_year, end_year]")
 	cfg["correlation_period"] = [int(period[0]), int(period[1])]
 
-	wue_periods = cfg.get("wue_periods", {})
-	if not isinstance(wue_periods, dict):
-		raise ValueError("wue_periods must be a dictionary of named ranges.")
-	for name, bounds in wue_periods.items():
+	index_periods = cfg.get("index_periods", {})
+	if not isinstance(index_periods, dict):
+		raise ValueError("index_periods must be a dictionary of named ranges.")
+	for name, bounds in index_periods.items():
 		if not isinstance(bounds, list) or len(bounds) != 2:
-			raise ValueError(f"wue_periods['{name}'] must be [start_year, end_year].")
-		wue_periods[name] = [int(bounds[0]), int(bounds[1])]
-	cfg["wue_periods"] = wue_periods
+			raise ValueError(f"index_periods['{name}'] must be [start_year, end_year].")
+		index_periods[name] = [int(bounds[0]), int(bounds[1])]
+	cfg["index_periods"] = index_periods
 
-	cfg["wue_window_start_year"] = int(cfg.get("wue_window_start_year", 1000))
-	cfg["wue_window_size"] = int(cfg.get("wue_window_size", 100))
-	cfg["wue_window_end_year"] = int(cfg.get("wue_window_end_year", 1998))
+	cfg["index_window_start_year"] = int(cfg.get("index_window_start_year", 1000))
+	cfg["index_window_size"] = int(cfg.get("index_window_size", 100))
+	cfg["index_window_end_year"] = int(cfg.get("index_window_end_year", 1998))
 	return cfg
 
 
@@ -200,12 +200,12 @@ def get_correlation(x: pd.Series, y: pd.Series, method: str = "pearson") -> Tupl
 
 
 def compute_monthly_correlations(
-	wue_df: pd.DataFrame,
+	index_df: pd.DataFrame,
 	clim_df: pd.DataFrame,
 	sites_sorted: Sequence[str],
 	year_column: str,
 	month_column: str,
-	wue_suffix: str,
+	index_suffix: str,
 	method: str = "pearson"
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
 	rs: Dict[str, List[float]] = {site: [] for site in sites_sorted}
@@ -214,17 +214,17 @@ def compute_monthly_correlations(
 	for month in range(1, 13):
 		month_mask = clim_df[month_column] == month
 		local_clim = clim_df.loc[month_mask].copy()
-		merged = wue_df.merge(local_clim, how="inner", on=year_column)
+		merged = index_df.merge(local_clim, how="inner", on=year_column)
 
 		for site in sites_sorted:
-			wue_col = f"{site}{wue_suffix}"
+			index_col = f"{site}{index_suffix}"
 			clim_col = site
 
-			if wue_col not in merged.columns or clim_col not in merged.columns:
+			if index_col not in merged.columns or clim_col not in merged.columns:
 				r, p = np.nan, np.nan
 			else:
 				r, p = get_correlation(
-					merged[wue_col],
+					merged[index_col],
 					merged[clim_col],
 					method=method
 				)
@@ -358,7 +358,7 @@ def save_heatmaps(
 
 
 def run_correlation_set(
-	wue_df: pd.DataFrame,
+	index_df: pd.DataFrame,
 	climate_data: Dict[str, pd.DataFrame],
 	cfg: Dict[str, Any],
 	method: str = "pearson"
@@ -368,12 +368,12 @@ def run_correlation_set(
 
 	for index in cfg["clim_indices"]:
 		r_df, p_df = compute_monthly_correlations(
-			wue_df=wue_df,
+			index_df=index_df,
 			clim_df=climate_data[index],
 			sites_sorted=cfg["sites_sorted"],
 			year_column=cfg["year_column"],
 			month_column=cfg["month_column"],
-			wue_suffix=cfg["wue_suffix"],
+			index_suffix=cfg["index_suffix"],
 			method=method
 		)
 		rs[index] = r_df
@@ -381,29 +381,29 @@ def run_correlation_set(
 	return rs, ps
 
 
-def get_wue_correlation(
-	wue_df: pd.DataFrame,
+def get_index_correlation(
+	index_df: pd.DataFrame,
 	cfg: Dict[str, Any],
 	method: str = "pearson"
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
 	sites_sorted=cfg["sites_sorted"]
-	wue_suffix=cfg["wue_suffix"]
+	index_suffix=cfg["index_suffix"]
 
 	rs: Dict[str, List] = {}
 	ps: Dict[str, List] = {}
 
 	for site_1 in sites_sorted:
-		col_1 = f"{site_1}{wue_suffix}"
+		col_1 = f"{site_1}{index_suffix}"
 		rs[site_1] = []
 		ps[site_1] = []
 		for site_2 in sites_sorted:
-			col_2 = f"{site_2}{wue_suffix}"
-			if col_1 not in wue_df.columns or col_2 not in wue_df.columns:
+			col_2 = f"{site_2}{index_suffix}"
+			if col_1 not in index_df.columns or col_2 not in index_df.columns:
 				r, p = np.nan, np.nan
 			else:
 				r, p = get_correlation(
-					wue_df[col_1],
-					wue_df[col_2],
+					index_df[col_1],
+					index_df[col_2],
 					method=method
 				)
 
@@ -459,8 +459,8 @@ def flatten_corr_matrices(
 	return pd.DataFrame(rows)
 
 
-def get_wue_correlation_by_periods(
-	wue_df: pd.DataFrame,
+def get_index_correlation_by_periods(
+	index_df: pd.DataFrame,
 	cfg: Dict[str, Any],
 	method: str = "pearson"
 ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, pd.DataFrame]]:
@@ -468,20 +468,20 @@ def get_wue_correlation_by_periods(
 	rs_all: Dict[str, pd.DataFrame] = {}
 	ps_all: Dict[str, pd.DataFrame] = {}
 
-	for period_name, bounds in cfg["wue_periods"].items():
-		period_df = filter_by_year_period(wue_df, year_column, bounds)
-		r_df, p_df = get_wue_correlation(period_df, cfg, method=method)
+	for period_name, bounds in cfg["index_periods"].items():
+		period_df = filter_by_year_period(index_df, year_column, bounds)
+		r_df, p_df = get_index_correlation(period_df, cfg, method=method)
 		rs_all[period_name] = r_df
 		ps_all[period_name] = p_df
 
 	window_periods = build_window_periods(
-		cfg["wue_window_start_year"],
-		cfg["wue_window_size"],
-		cfg["wue_window_end_year"]
+		cfg["index_window_start_year"],
+		cfg["index_window_size"],
+		cfg["index_window_end_year"]
 	)
 	for window_label, bounds in window_periods:
-		window_df = filter_by_year_period(wue_df, year_column, bounds)
-		r_df, p_df = get_wue_correlation(window_df, cfg, method=method)
+		window_df = filter_by_year_period(index_df, year_column, bounds)
+		r_df, p_df = get_index_correlation(window_df, cfg, method=method)
 		rs_all[f"win_{window_label}"] = r_df
 		ps_all[f"win_{window_label}"] = p_df
 
@@ -499,9 +499,9 @@ def main() -> None:
 	mode_dirs = ensure_mode_dirs(output_dir)
 
 	print("[INFO] Reading input datasets...")
-	wue_df = pd.read_csv(cfg["wue_file"])
-	wue_detrended_df_full = pd.read_csv(cfg["wue_detrended_file"])
-	wue_detrended_df = wue_detrended_df_full.copy()
+	index_df = pd.read_csv(cfg["index_file"])
+	index_detrended_df_full = pd.read_csv(cfg["index_detrended_file"])
+	index_detrended_df = index_detrended_df_full.copy()
 	climate_raw = read_climate_data(cfg["clim_indices"], cfg["climate_raw_dir"])
 	climate_detrended = read_detrended_climate_data(
 		cfg["clim_indices"],
@@ -509,13 +509,13 @@ def main() -> None:
 	)
 
 	# Keep only years inside correlation_period (inclusive).
-	wue_df = filter_by_year_period(
-		wue_df,
+	index_df = filter_by_year_period(
+		index_df,
 		cfg["year_column"],
 		cfg["correlation_period"]
 	)
-	wue_detrended_df = filter_by_year_period(
-		wue_detrended_df,
+	index_detrended_df = filter_by_year_period(
+		index_detrended_df,
 		cfg["year_column"],
 		cfg["correlation_period"]
 	)
@@ -531,19 +531,19 @@ def main() -> None:
 			cfg["correlation_period"]
 		)
 	
-	print("[INFO] Computing detrended iWUE-vs-iWUE by config periods/windows...")
-	rs_wue_periods, ps_wue_periods = get_wue_correlation_by_periods(
-		wue_detrended_df_full,
+	print("[INFO] Computing detrended index-vs-index by config periods/windows...")
+	rs_index_periods, ps_index_periods = get_index_correlation_by_periods(
+		index_detrended_df_full,
 		cfg,
 		method="pearson"
 	)
 
 	print("[INFO] Computing correlations for raw climate data...")
-	rs_raw, ps_raw = run_correlation_set(wue_df, climate_raw, cfg, method="pearson")
+	rs_raw, ps_raw = run_correlation_set(index_df, climate_raw, cfg, method="pearson")
 
 	print("[INFO] Computing correlations for detrended climate data...")
 	rs_detr, ps_detr = run_correlation_set(
-		wue_detrended_df,
+		index_detrended_df,
 		climate_detrended,
 		cfg,
 		method="pearson"
@@ -551,7 +551,7 @@ def main() -> None:
 
 	print("[INFO] Computing first-order-difference correlations from raw data...")
 	rs_first_diff, ps_first_diff = run_correlation_set(
-		wue_df,
+		index_df,
 		climate_raw,
 		cfg,
 		method="first_diff"
@@ -560,13 +560,13 @@ def main() -> None:
 	raw_excel = mode_dirs["raw"] / cfg["excel_raw_name"]
 	detr_excel = mode_dirs["detrended"] / cfg["excel_detrended_name"]
 	first_diff_excel = mode_dirs["first_diff"] / cfg["excel_first_diff_name"]
-	wue_period_corr_excel = mode_dirs["detrended"] / cfg["wue_periods_output_name"]
+	index_period_corr_excel = output_dir / cfg["index_periods_output_name"]
 
-	print(f"[INFO] Saving tables: {wue_period_corr_excel}")
+	print(f"[INFO] Saving tables: {index_period_corr_excel}")
 	save_correlation_excel(
-		rs_wue_periods,
-		ps_wue_periods,
-		wue_period_corr_excel,
+		rs_index_periods,
+		ps_index_periods,
+		index_period_corr_excel,
 		cfg["p_threshold"]
 	)
 

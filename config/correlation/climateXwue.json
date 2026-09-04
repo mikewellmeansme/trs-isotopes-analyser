@@ -1,6 +1,6 @@
 {
-  "wue_file": "data/processed/WUE/data.csv",
-  "wue_detrended_file": "results/Paper_005/trends/WUE_trends (1900-2020)/data__detrended_data.csv",
+  "index_file": "data/processed/WUE/data.csv",
+  "index_detrended_file": "results/Paper_005/trends/WUE_trends (1900-2020)/data__detrended_data.csv",
   "climate_raw_dir": "data/processed/CRU_TS_4.09",
   "climate_detrended_dir": "results/Paper_005/trends/CRU_TS_4.09_trends (1901-1998)",
   "correlation_period": [1901, 1998],
@@ -18,7 +18,7 @@
   },
   "year_column": "Year",
   "month_column": "Month",
-  "wue_suffix": "_WUE",
+  "index_suffix": "_WUE",
   "p_threshold": 0.01,
   "font_size": 20,
   "font_family": "Times New Roman",
