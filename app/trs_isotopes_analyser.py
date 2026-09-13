@@ -25,11 +25,11 @@ class TRSIsotopesAnalyser:
     climate_data = Dict[str, MonthlyDataFrame]
     
     def __init__(
-            self,
-            sites_path: str,
-            isotopes_path: str,
-            climate_path: str
-        ) -> None:
+        self,
+        sites_path: str,
+        isotopes_path: str,
+        climate_path: str
+    ) -> None:
         self.sites = self._load_sites_(sites_path)
         self.isotopes = self._load_isotopes_(isotopes_path)
         self.climate_data = self._load_climate_(climate_path)
@@ -81,13 +81,13 @@ class TRSIsotopesAnalyser:
         return list(filter(lambda i: i.match(isotope, site_pattern), self.isotopes))
     
     def boxplot(
-            self,
-            isotope: str,
-            sort_by: Callable[[IsotopeData], int] = None,
-            ylabel: Optional[str] = None,
-            subplots_kws: Optional[Dict] = None,
-            site_to_color: Optional[Dict[str, str]] = None,
-        ) -> Tuple[Figure, Axes]:
+        self,
+        isotope: str,
+        sort_by: Callable[[IsotopeData], int] = None,
+        ylabel: Optional[str] = None,
+        subplots_kws: Optional[Dict] = None,
+        site_to_color: Optional[Dict[str, str]] = None,
+    ) -> Tuple[Figure, Axes]:
 
         subplots_kws = subplots_kws or {}
         isotopes = self.__get_isotopes_by_pattern__(isotope)
@@ -118,12 +118,12 @@ class TRSIsotopesAnalyser:
         return fig, axes
     
     def mannwhitneyu(
-            self,
-            isotope: str,
-            output_function: OutputFunction,
-            highlight_from: Optional[float] = None,
-            sort_by: Callable[[IsotopeData], int] = None,
-        ) -> pd.DataFrame:
+        self,
+        isotope: str,
+        output_function: OutputFunction,
+        highlight_from: Optional[float] = None,
+        sort_by: Callable[[IsotopeData], int] = None,
+    ) -> pd.DataFrame:
 
         isotopes = self.__get_isotopes_by_pattern__(isotope)
         
@@ -149,13 +149,13 @@ class TRSIsotopesAnalyser:
             )
     
     def mannwhitneyu_heatmap(
-            self,
-            isotope,
-            isotope_title: str,
-            sort_by: Callable[[IsotopeData], int] = None,
-            site_to_color: Optional[Dict[str, str]] = None,
-            clustermap_kwargs: Optional[Dict] = None
-        ) -> sns.matrix.ClusterGrid:
+        self,
+        isotope,
+        isotope_title: str,
+        sort_by: Callable[[IsotopeData], int] = None,
+        site_to_color: Optional[Dict[str, str]] = None,
+        clustermap_kwargs: Optional[Dict] = None
+    ) -> sns.matrix.ClusterGrid:
 
         def print_p_values(r, p, *args, **kwargs):
             return p
@@ -201,10 +201,10 @@ class TRSIsotopesAnalyser:
         return hm
     
     def __get_isotope_by_site_code__(
-            self,
-            isotope: str,
-            site_code: str
-        ) -> Optional[IsotopeData]:
+        self,
+        isotope: str,
+        site_code: str
+    ) -> Optional[IsotopeData]:
         f = filter(
             lambda x: x.site.code == site_code,
             self.__get_isotopes_by_pattern__(isotope)
@@ -217,10 +217,10 @@ class TRSIsotopesAnalyser:
 
     @staticmethod
     def get_trend(
-            x: List[float],
-            y: List[float],
-            deg: int = 6
-        ) -> List[float]:
+        x: List[float],
+        y: List[float],
+        deg: int = 6
+    ) -> List[float]:
 
         p = Polynomial()
         p.fit(x, y, deg=deg)
@@ -228,11 +228,11 @@ class TRSIsotopesAnalyser:
         return trend
     
     def get_trends_r2(
-            self,
-            isotope: str,
-            site_codes: List[str],
-            trend_deg: int = 6
-        ) -> Dict[str, Tuple[float, float]]:
+        self,
+        isotope: str,
+        site_codes: List[str],
+        trend_deg: int = 6
+    ) -> Dict[str, Tuple[float, float]]:
 
         isotopes = self.__get_isotopes_by_pattern__(isotope)
         result = {}
@@ -332,16 +332,16 @@ class TRSIsotopesAnalyser:
         return fig, axes
 
     def compare_with_climate(
-            self,
-            isotope: str,
-            climate_index: str,
-            *,
-            site_codes: Optional[List[str]] = None,
-            compare_by: ComparisonFunction = compare_pearsonr,
-            sort_by: Callable[[IsotopeData], int] = None,
-            start_year: Optional[int] = None,
-            end_year: Optional[int] = None
-        ) -> pd.DataFrame:
+        self,
+        isotope: str,
+        climate_index: str,
+        *,
+        site_codes: Optional[List[str]] = None,
+        compare_by: ComparisonFunction = compare_pearsonr,
+        sort_by: Callable[[IsotopeData], int] = None,
+        start_year: Optional[int] = None,
+        end_year: Optional[int] = None
+    ) -> pd.DataFrame:
         """
         Params:
             isotope: isotope name (13C, 2H, 18O, etc.)
@@ -415,16 +415,16 @@ class TRSIsotopesAnalyser:
         return result
     
     def _get_wide_comparison_(
-            self,
-            isotopes: List[str],
-            climate_index: str,
-            prev_months: List[int],
-            curr_months: List[int],
-            compare_by: ComparisonFunction = compare_pearsonr,
-            sort_by: Callable[[IsotopeData], int] = None,
-            start_year: Optional[int] = None,
-            end_year: Optional[int] = None
-        ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        self,
+        isotopes: List[str],
+        climate_index: str,
+        prev_months: List[int],
+        curr_months: List[int],
+        compare_by: ComparisonFunction = compare_pearsonr,
+        sort_by: Callable[[IsotopeData], int] = None,
+        start_year: Optional[int] = None,
+        end_year: Optional[int] = None
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
         months = [f'{Months(i).name} prev' for i in prev_months] \
                + [Months(i).name for i in curr_months]
@@ -500,21 +500,21 @@ class TRSIsotopesAnalyser:
     }
 
     def heatmap(
-            self,
-            isotopes: List[str],
-            climate_index: str,
-            prev_months: List[int],
-            curr_months: List[int],
-            isotope_to_color: Dict[str, str],
-            isotope_to_name: Dict[str, str],
-            compare_by: ComparisonFunction = compare_pearsonr,
-            sort_by: Callable[[IsotopeData], int] = None,
-            start_year: Optional[int] = None,
-            end_year: Optional[int] = None,
-            min_p_value: float = 0.05,
-            clustermap_kwargs: Optional[Dict] = None,
-            rectangles_kwargs: Optional[Dict] = None
-        ) -> sns.matrix.ClusterGrid:
+        self,
+        isotopes: List[str],
+        climate_index: str,
+        prev_months: List[int],
+        curr_months: List[int],
+        isotope_to_color: Dict[str, str],
+        isotope_to_name: Dict[str, str],
+        compare_by: ComparisonFunction = compare_pearsonr,
+        sort_by: Callable[[IsotopeData], int] = None,
+        start_year: Optional[int] = None,
+        end_year: Optional[int] = None,
+        min_p_value: float = 0.05,
+        clustermap_kwargs: Optional[Dict] = None,
+        rectangles_kwargs: Optional[Dict] = None
+    ) -> sns.matrix.ClusterGrid:
 
         stats, mask = self._get_wide_comparison_(
             isotopes,
