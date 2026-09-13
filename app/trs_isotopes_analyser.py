@@ -537,11 +537,11 @@ class TRSIsotopesAnalyser:
 
         row_colors = [isotope_to_color[i.split('_')[0]] for i in stats.index]
 
-        clustermap_kwargs = {} or clustermap_kwargs
+        clustermap_kwargs = clustermap_kwargs or {}
         clustermap_kwargs = self._default_clustermap_kwargs | clustermap_kwargs 
         clustermap_kwargs['row_colors'] = row_colors
 
-        rectangles_kwargs = {} or rectangles_kwargs
+        rectangles_kwargs = rectangles_kwargs or {}
         rectangles_kwargs = self._default_rectangles_kwargs | rectangles_kwargs
 
         hm = sns.clustermap(

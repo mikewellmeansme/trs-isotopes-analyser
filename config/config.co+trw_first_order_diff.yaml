@@ -6,7 +6,7 @@ plot_font:
   size: "16"
   family: "Times New Roman"
 
-save_path: "results/Paper_004"
+save_path: "results/Paper_004/first_order_diff"
 
 site_to_order:
   YAK: 1
@@ -61,3 +61,22 @@ heatmap_kwargs:
   end_year: 2004
   min_p_value: 0.05
   compare_by: "first_order_diff"
+
+sites_trends:
+  - YAK
+  - TAY
+  - TUR
+  - ENE
+  - KHAK
+
+zscore_trends_kwargs:
+  xlim: 
+    - 1900
+    - 2000
+  ylim:
+    - -2.5
+    - 2.5
+  yticks:
+    - -1.5
+    - 0.0
+    - 1.5

@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -32,6 +34,8 @@ def main(config_path: str):
     )
 
     sort_by = lambda x: config['site_to_order'][x.site.code]
+
+    os.makedirs(config["save_path"], exist_ok=True)
 
 
 cli = typer.Typer(callback=main)
@@ -75,6 +79,7 @@ def save_heatmaps():
             range(9, 13),
             range(1, 9),
             config['isotope_to_color'],
+            config['isotope_to_name'],
             sort_by=sort_by,
             **config['heatmap_kwargs']
         )
