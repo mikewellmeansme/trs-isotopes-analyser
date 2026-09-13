@@ -5,11 +5,11 @@ import seaborn as sns
 from matplotlib.figure import Figure, Axes
 from os import listdir
 from scipy.stats import zscore
-from typing import Dict, Optional, List, Tuple, Callable
+from typing import Dict, Optional, List, Tuple, Callable, Union
 
 from app.isotope_data import IsotopeData
 from app.site_data import SiteData
-from app.utils.comparison_functions import compare_pearsonr
+from app.utils.comparison_functions import compare_pearsonr, compare_first_order_diff_pearsonr
 from app.utils.plots import print_p_classic
 
 from zhutils.approximators import Polynomial
@@ -23,6 +23,10 @@ class TRSIsotopesAnalyser:
     sites: List[SiteData]
     isotopes: List[IsotopeData]
     climate_data = Dict[str, MonthlyDataFrame]
+    _compare_func_map = {
+        "pearson": compare_pearsonr,
+        "first_order_diff": compare_first_order_diff_pearsonr
+    }
     
     def __init__(
         self,
@@ -337,7 +341,7 @@ class TRSIsotopesAnalyser:
         climate_index: str,
         *,
         site_codes: Optional[List[str]] = None,
-        compare_by: ComparisonFunction = compare_pearsonr,
+        compare_by: Union[ComparisonFunction, str] = compare_pearsonr,
         sort_by: Callable[[IsotopeData], int] = None,
         start_year: Optional[int] = None,
         end_year: Optional[int] = None
@@ -347,7 +351,7 @@ class TRSIsotopesAnalyser:
             isotope: isotope name (13C, 2H, 18O, etc.)
             climate_index: climate index name (Temperature, Precipitation, VPD, etc.)
             site_codes: List of site codes to compare
-            compare_by: comparison function (default: pearson correlation)
+            compare_by: str or func comparison function (default: pearson correlation)
             sort_by: sort function for isotopes (by lat \ lon, name etc.)
             start_year: beginning of comparison period
             end_year: ending of comparison period
@@ -358,6 +362,10 @@ class TRSIsotopesAnalyser:
                 Stat: float
                 P-value: float
         """
+        if isinstance(compare_by, str):
+            if compare_by not in self._compare_func_map:
+                raise KeyError(f"Wrong {compare_by = }, supported only: {set(self._compare_func_map.keys())}")
+            compare_by = self._compare_func_map[compare_by]
 
         if site_codes:
             isotopes = []
@@ -376,7 +384,7 @@ class TRSIsotopesAnalyser:
         for i in isotopes:
             
             i_data = i.data
-            clim_data = self.climate_data.get(i.site.station_name)
+            clim_data: MonthlyDataFrame = self.climate_data.get(i.site.station_name)
 
             if clim_data is None:
                 continue
